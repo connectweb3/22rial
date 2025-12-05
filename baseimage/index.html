@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Base Image Gallery</title>
+    <link rel="stylesheet" href="../home.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+    <style>
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .img-card {
+            background-color: var(--card-bg);
+            border: 4px solid var(--border-color);
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .img-card:hover {
+            transform: translate(-4px, -4px);
+            box-shadow: 8px 8px 0px #000;
+            border-color: var(--accent-color);
+        }
+
+        .img-preview {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            border: 2px solid var(--border-color);
+            margin-bottom: 1rem;
+            background: #000;
+        }
+
+        .img-name {
+            font-family: var(--font-body);
+            color: var(--text-color);
+            margin-bottom: 0.5rem;
+            text-align: center;
+            word-break: break-all;
+        }
+
+        .download-btn {
+            display: inline-block;
+            width: 100%;
+            padding: 10px;
+            background: var(--accent-color);
+            color: #000;
+            text-align: center;
+            cursor: pointer;
+            font-family: var(--font-heading);
+            font-size: 0.8rem;
+            border: none;
+            text-transform: uppercase;
+        }
+
+        .download-btn:hover {
+            background: #fff;
+        }
+
+        .loading-text {
+            text-align: center;
+            color: var(--accent-color);
+            font-family: var(--font-heading);
+            margin: 2rem 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="scanlines"></div>
+    <div class="container">
+        <h1>Base Image Gallery</h1>
+        <p class="subtitle">Browse and Download High-Quality Assets</p>
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <a href="../index.html" class="back-btn">← Back to Home</a>
+        </div>
+
+        <div id="loading" class="loading-text">Scanning for files...</div>
+        <div id="gallery" class="gallery-grid"></div>
+
+        <footer>
+            &copy; 2025 NFT Tools Suite. All rights reserved.
+        </footer>
+    </div>
+
+    <script>
+        const gallery = document.getElementById('gallery');
+        const loading = document.getElementById('loading');
+
+        // Configuration
+        const MAX_SCAN = 300;
+        const EXTENSIONS = ['png', 'jpg', 'jpeg'];
+
+        async function initGallery() {
+            const promises = [];
+
+            for (let i = 1; i <= MAX_SCAN; i++) {
+                for (const ext of EXTENSIONS) {
+                    const filename = `base (${i}).${ext}`;
+                    promises.push(checkImage(filename));
+                }
+            }
+
+            const results = await Promise.all(promises);
+            const foundCount = results.filter(r => r).length;
+
+            if (foundCount === 0) {
+                loading.innerText = "No images found. Please ensure files are named 'base (x).png/jpg'";
+            } else {
+                loading.style.display = 'none';
+            }
+        }
+
+        function checkImage(filename) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => {
+                    addImageToGallery(filename, img.src);
+                    resolve(true);
+                };
+                img.onerror = () => {
+                    resolve(false);
+                };
+                img.src = filename;
+            });
+        }
+
+        function addImageToGallery(filename, src) {
+            const card = document.createElement('div');
+            card.className = 'img-card';
+
+            const img = document.createElement('img');
+            img.className = 'img-preview';
+            img.src = src;
+            img.alt = filename;
+            img.loading = "lazy";
+
+            const name = document.createElement('div');
+            name.className = 'img-name';
+            name.innerText = filename;
+
+            const btn = document.createElement('button');
+            btn.className = 'download-btn';
+            btn.innerHTML = '⬇ Download';
+            btn.onclick = (e) => downloadProcessed(e, img, filename);
+
+            card.appendChild(img);
+            card.appendChild(name);
+            card.appendChild(btn);
+
+            // Add to gallery in sorted order
+            // Extract number from filename "base (X).ext"
+            const match = filename.match(/\((\d+)\)/);
+            const num = match ? parseInt(match[1]) : 0;
+            card.dataset.order = num;
+
+            const children = Array.from(gallery.children);
+            if (children.length === 0) {
+                gallery.appendChild(card);
+            } else {
+                let inserted = false;
+                for (let i = 0; i < children.length; i++) {
+                    const childNum = parseInt(children[i].dataset.order);
+                    if (num < childNum) {
+                        gallery.insertBefore(card, children[i]);
+                        inserted = true;
+                        break;
+                    }
+                }
+                if (!inserted) {
+                    gallery.appendChild(card);
+                }
+            }
+        }
+
+        async function downloadProcessed(event, sourceWrapper, originalName) {
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = 'Processing...';
+            btn.disabled = true;
+
+            try {
+                // Create canvas
+                const canvas = document.createElement('canvas');
+                canvas.width = 1024;
+                canvas.height = 1024;
+                const ctx = canvas.getContext('2d');
+
+                // Create a new image object to ensure we have the full original to draw
+                const img = new Image();
+                img.crossOrigin = "anonymous";
+                img.src = sourceWrapper.src;
+
+                await new Promise((resolve, reject) => {
+                    if (img.complete) resolve();
+                    img.onload = resolve;
+                    img.onerror = reject;
+                });
+
+                // Draw and resize
+                ctx.drawImage(img, 0, 0, 1024, 1024);
+
+                // Convert to JPG High Quality
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.95); // 0.95 quality
+
+                // Download
+                const link = document.createElement('a');
+                link.download = originalName.replace(/\.[^/.]+$/, "") + "_1024.jpg";
+                link.href = dataUrl;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+            } catch (err) {
+                console.error("Error converting image", err);
+                alert("Failed to process image");
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        // Run
+        initGallery();
+    </script>
+</body>
+
+</html>
