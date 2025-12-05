@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV Row Deleter Tool</title>
+    <link rel="stylesheet" href="../home.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+    <style>
+        /* Tool-specific overrides/additions to match theme */
+        .tool-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .upload-area {
+            border: 4px dashed var(--border-color);
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            background: rgba(0, 0, 0, 0.2);
+            transition: all 0.2s;
+            margin-bottom: 2rem;
+        }
+
+        .upload-area:hover,
+        .upload-area.dragover {
+            border-color: var(--accent-color);
+            background: rgba(0, 255, 65, 0.05);
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.1);
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 2rem;
+            margin-bottom: 1.5rem;
+            justify-content: center;
+        }
+
+        .radio-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            font-family: var(--font-body);
+            font-size: 1.2rem;
+        }
+
+        .radio-label input[type="radio"] {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--accent-color);
+            border-radius: 50%;
+            margin-right: 5px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .radio-label input[type="radio"]:checked::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 10px;
+            height: 10px;
+            background: var(--accent-color);
+            border-radius: 50%;
+            box-shadow: 0 0 5px var(--accent-color);
+        }
+
+        .error-message {
+            color: #ff0055;
+            font-family: var(--font-heading);
+            font-size: 0.8rem;
+            margin-top: 1rem;
+            text-align: center;
+            text-shadow: 2px 2px 0px #000;
+        }
+
+        /* Preview Area Specifics */
+        textarea#csvPreview {
+            font-family: 'VT323', monospace;
+            background: #000;
+            color: var(--accent-color);
+            border: 2px solid var(--border-color);
+            padding: 1rem;
+            height: 300px;
+            width: 100%;
+            font-size: 1.1rem;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="scanlines"></div>
+    <div class="container tool-container">
+        <div class="back-link" style="margin-bottom: 2rem;">
+            <a href="../index.html" class="btn-secondary">← Back to Tools</a>
+        </div>
+
+        <header style="text-align: center; margin-bottom: 3rem;">
+            <h1>CSV Row Editor</h1>
+            <p class="subtitle">Upload, Edit, and Shift</p>
+        </header>
+
+        <div class="card">
+            <!-- Upload Section -->
+            <div class="input-group">
+                <label for="csvFileInput" class="upload-area" id="dropArea">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">📂</div>
+                    <span class="file-msg">Drag & Drop or Click to Upload .csv</span>
+                    <input type="file" id="csvFileInput" accept=".csv" hidden>
+                </label>
+            </div>
+
+            <!-- Mode Selection -->
+            <div class="input-group mode-selector" style="text-align: center;">
+                <label style="margin-bottom: 1rem; display: block;">OPERATION MODE</label>
+                <div class="radio-group">
+                    <label class="radio-label">
+                        <input type="radio" name="deleteMode" value="delete" checked>
+                        <span>Delete Selected</span>
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="deleteMode" value="keep">
+                        <span>Keep Only Selected</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Row Input -->
+            <div class="input-group row-selector">
+                <label for="rowNumberInput">TARGET ROWS (e.g. 1, 3, 5-8)</label>
+                <input type="text" id="rowNumberInput" placeholder="Enter row numbers...">
+            </div>
+
+            <!-- Action Button -->
+            <div class="actions" style="text-align: center; margin-top: 2rem;">
+                <button id="deleteBtn" class="btn-primary" style="width: 100%; font-size: 1.2rem;">
+                    PROCESS CSV
+                </button>
+            </div>
+
+            <div id="errorMsg" class="error-message" style="display: none;"></div>
+        </div>
+
+        <!-- Preview Section -->
+        <div class="preview-section" id="previewSection" style="display: none; margin-top: 2rem;">
+            <div class="card">
+                <div class="preview-header"
+                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h2>Preview Result</h2>
+                    <button id="downloadBtn" class="btn-success">Download CSV</button>
+                </div>
+                <textarea id="csvPreview" readonly></textarea>
+            </div>
+        </div>
+
+        <footer>
+            &copy; 2025 NFT Tools Suite. All rights reserved.
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meme Prompt Generator - NFT Tools</title>
+    <link rel="stylesheet" href="../home.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+    <style>
+        .preview-container {
+            margin-top: 1rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .preview-box {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            border: 2px dashed var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .preview-box img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: cover;
+        }
+
+        .preview-label {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            font-size: 0.7rem;
+            padding: 2px;
+            text-align: center;
+        }
+
+        /* Drag & Drop Styles */
+        .upload-area {
+            transition: all 0.2s ease;
+        }
+
+        .upload-area.drag-over {
+            border-color: var(--accent-color);
+            background: rgba(0, 255, 65, 0.1);
+            transform: scale(1.02);
+        }
+
+        .char-input-group {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            border: 1px dashed var(--border-color);
+            /* Dashed to imply drop zone */
+            background: rgba(255, 255, 255, 0.02);
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        .char-input-group.drag-over {
+            border-color: var(--secondary-accent);
+            background: rgba(255, 0, 255, 0.1);
+        }
+
+        .remove-char-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #ff0055;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 0.8rem;
+            padding: 2px 6px;
+            font-family: var(--font-heading);
+            z-index: 10;
+        }
+
+        .d-none {
+            display: none;
+        }
+
+        .result-area {
+            background-color: var(--input-bg);
+            border: 2px solid var(--accent-color);
+            color: var(--accent-color);
+            font-family: monospace;
+            padding: 1rem;
+            min-height: 100px;
+            margin-top: 1rem;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="scanlines"></div>
+    <div class="container">
+        <h1>Meme Prompt Generator</h1>
+        <p class="subtitle">Recreate memes with your characters</p>
+        <a href="../index.html" class="back-btn" style="margin-bottom: 2rem;">&larr; Back to Tools</a>
+
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2 style="margin-bottom: 0;">1. Reference Meme</h2>
+                <a href="https://imgflip.com/memetemplates" target="_blank" class="mini-btn"
+                    style="text-decoration: none; font-size: 0.7rem; padding: 6px 12px; border: 2px solid var(--accent-color); color: var(--accent-color);">
+                    Find Meme ↗
+                </a>
+            </div>
+
+            <div class="upload-area" id="meme-drop-zone">
+                <p>Drag & Drop Reference Meme Here<br><span style="font-size: 0.8rem; color: #666;">(or click to
+                        upload)</span></p>
+                <input type="file" id="meme-input" accept="image/*" class="d-none">
+            </div>
+            <div id="meme-preview" class="preview-container"></div>
+        </div>
+
+        <div class="card">
+            <h2>2. Characters</h2>
+            <div id="char-container">
+                <!-- Character inputs will be added here -->
+            </div>
+            <button id="add-char-btn" class="btn-secondary">+ Add Character</button>
+        </div>
+
+        <div class="card">
+            <h2>3. Additional Instructions</h2>
+            <label for="additional-prompt">Add extra details for the prompt:</label>
+            <textarea id="additional-prompt" rows="4"
+                placeholder="e.g., Make it in a pixel art style, high contrast..."></textarea>
+        </div>
+
+        <!-- Settings Hidden -->
+
+        <div class="center-actions" style="text-align: center; margin: 2rem 0;">
+            <button id="generate-btn" class="btn-primary" style="font-size: 1.2rem; padding: 1rem 2rem;">
+                <span id="btn-text">Generate AI Prompt</span>
+                <span id="btn-loader" class="d-none">⏳ Processing...</span>
+            </button>
+        </div>
+
+        <div class="card" id="result-section">
+            <h2>Generated Prompt</h2>
+            <div id="output-prompt" class="result-area"></div>
+            <button id="copy-btn" class="btn-success" style="margin-top: 1rem;">Copy to Clipboard</button>
+        </div>
+
+        <!-- Final Step Section -->
+        <div class="card" style="border-color: var(--accent-color);">
+            <h2>4. Final Step: Generate Image</h2>
+            <p>Go to Gemini or Whisk. Upload your <strong>Base Image</strong> as a reference, then paste the generated
+                prompt above.</p>
+
+            <div class="center-actions" style="justify-content: flex-start; gap: 1rem; margin-top: 1rem;">
+                <a href="https://gemini.google.com/" target="_blank" class="btn-secondary"
+                    style="text-decoration: none;">
+                    Open Gemini ↗
+                </a>
+                <a href="https://labs.google/fx/tools/whisk" target="_blank" class="btn-secondary"
+                    style="text-decoration: none;">
+                    Open Whisk ↗
+                </a>
+                <button id="copy-btn-2" class="btn-success">Copy Prompt</button>
+            </div>
+        </div>
+
+        <footer>
+            &copy; 2025 NFT Tools Suite. All rights reserved.
+        </footer>
+    </div>
+
+    <script>
+        // DOM Elements
+        const memeInput = document.getElementById('meme-input');
+        const memeDropZone = document.getElementById('meme-drop-zone');
+        const memePreview = document.getElementById('meme-preview');
+        const charContainer = document.getElementById('char-container');
+        const addCharBtn = document.getElementById('add-char-btn');
+        const generateBtn = document.getElementById('generate-btn');
+        const btnText = document.getElementById('btn-text');
+        const btnLoader = document.getElementById('btn-loader');
+        const outputPrompt = document.getElementById('output-prompt');
+        const copyBtn = document.getElementById('copy-btn');
+        const copyBtn2 = document.getElementById('copy-btn-2');
+        const additionalPrompt = document.getElementById('additional-prompt');
+
+        // Configuration
+        const API_KEY = "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";
+        const MODEL_ID = "google/gemini-3-pro-preview";
+
+        let memeFile = null;
+        let charFiles = [];
+
+        // Helper: Setup Drag & Drop
+        function setupDragDrop(element, onDropCallback) {
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                element.addEventListener(eventName, preventDefaults, false);
+            });
+
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                element.addEventListener(eventName, () => element.classList.add('drag-over'), false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                element.addEventListener(eventName, () => element.classList.remove('drag-over'), false);
+            });
+
+            element.addEventListener('drop', (e) => {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                if (files.length > 0) {
+                    onDropCallback(files[0]);
+                }
+            }, false);
+        }
+
+        // Apply D&D to Meme Zone
+        setupDragDrop(memeDropZone, (file) => {
+            memeFile = file;
+            showPreview(memeFile, memePreview);
+        });
+
+        // Helper: Create Character Input Group
+        function createCharInput(index) {
+            const div = document.createElement('div');
+            div.className = 'char-input-group';
+            div.dataset.index = index;
+
+            // Notice: added onclick to trigger hidden input
+            div.innerHTML = `
+                <label>Character #${index + 1} (Drag & Drop available)</label>
+                ${index > 0 ? `<button class="remove-char-btn" onclick="removeChar(event, ${index})">X</button>` : ''}
+                <div class="drop-target" style="height: 100%; width: 100%;">
+                    <input type="file" id="char-input-${index}" onchange="handleCharFile(this, ${index})" accept="image/*" class="d-none">
+                    <p style="margin:0; font-size: 0.8rem; color: #666; pointer-events: none;">Click to upload or Drag here</p>
+                    <div class="preview-container" id="char-preview-${index}"></div>
+                </div>
+            `;
+
+            // Click anywhere to open file dialog
+            div.addEventListener('click', (e) => {
+                if (e.target.tagName !== 'BUTTON') {
+                    document.getElementById(`char-input-${index}`).click();
+                }
+            });
+
+            // Setup D&D for this specific char slot
+            setupDragDrop(div, (file) => {
+                // Update internal array
+                charFiles[index] = file;
+                // Show preview
+                showPreview(file, document.getElementById(`char-preview-${index}`));
+            });
+
+            return div;
+        }
+
+        // Initialize with one character input
+        function renderCharInputs() {
+            charContainer.innerHTML = '';
+            // Ensure at least one slot exists
+            if (charFiles.length === 0) charFiles.push(null);
+
+            charFiles.forEach((file, index) => {
+                const group = createCharInput(index);
+                charContainer.appendChild(group);
+
+                // Re-attach preview if file exists
+                if (file) {
+                    showPreview(file, document.getElementById(`char-preview-${index}`));
+                }
+            });
+        }
+
+        // Meme Upload Logic (Click)
+        memeDropZone.addEventListener('click', () => memeInput.click());
+        memeInput.addEventListener('change', (e) => {
+            if (e.target.files[0]) {
+                memeFile = e.target.files[0];
+                showPreview(memeFile, memePreview);
+            }
+        });
+
+        // Character Upload Logic (File Change)
+        window.handleCharFile = (input, index) => {
+            if (input.files[0]) {
+                charFiles[index] = input.files[0];
+                showPreview(input.files[0], document.getElementById(`char-preview-${index}`));
+            }
+        };
+
+        window.removeChar = (e, index) => {
+            e.stopPropagation(); // Stop bubble to prevent file dialog from opening
+            charFiles.splice(index, 1);
+            renderCharInputs();
+        };
+
+        addCharBtn.addEventListener('click', () => {
+            charFiles.push(null);
+            renderCharInputs();
+        });
+
+        // Preview Helper
+        function showPreview(file, container) {
+            container.innerHTML = '';
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const box = document.createElement('div');
+                box.className = 'preview-box';
+                box.innerHTML = `
+                    <img src="${e.target.result}" alt="Preview">
+                    <div class="preview-label">${file.name}</div>
+                `;
+                container.appendChild(box);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Convert File to Base64
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
+        }
+
+        // Set Loading State
+        function setLoading(isLoading) {
+            generateBtn.disabled = isLoading;
+            if (isLoading) {
+                btnText.classList.add('d-none');
+                btnLoader.classList.remove('d-none');
+            } else {
+                btnText.classList.remove('d-none');
+                btnLoader.classList.add('d-none');
+            }
+        }
+
+        // Generate Prompt via AI
+        generateBtn.addEventListener('click', async () => {
+            if (!memeFile) {
+                alert('Please upload a Reference Meme image.');
+                return;
+            }
+
+            const activeChars = charFiles.filter(f => f !== null);
+            if (activeChars.length === 0) {
+                alert('Please upload at least one Character image.');
+                return;
+            }
+
+            setLoading(true);
+            const extraText = additionalPrompt.value.trim();
+            const outputArea = outputPrompt;
+            outputArea.textContent = 'Analyzing images and generating prompt...';
+
+            try {
+                // Prepare contents for API
+                const content = [];
+
+                // 1. Text Instruction
+                content.push({
+                    type: "text",
+                    text: `You are an expert image generation prompt engineer. 
+Task: Create a detailed image generation prompt.
+Input 1 (First Image): REFERENCE MEME.
+Input 2+ (Subsequent Images): CHARACTER REFERENCE(S).
+Goal: Recreate the Reference Meme but swap the subject/character with the provided Character Reference(s).
+Requirements:
+- Describe the visual composition, pose, action, and background of the meme precisely.
+- Replace the original meme character description with a description matching the Character Reference.
+- Output ONLY the prompt string, no markdown, no conversational text.
+- Additional User Instructions: "${extraText}"`
+                });
+
+                // 2. Meme Image
+                const memeB64 = await fileToBase64(memeFile);
+                content.push({
+                    type: "image_url",
+                    image_url: { url: memeB64 }
+                });
+
+                // 3. Character Images
+                for (const charFile of activeChars) {
+                    const charB64 = await fileToBase64(charFile);
+                    content.push({
+                        type: "image_url",
+                        image_url: { url: charB64 }
+                    });
+                }
+
+                // Call OpenRouter
+                const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${API_KEY}`,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        model: MODEL_ID,
+                        messages: [
+                            {
+                                role: "user",
+                                content: content
+                            }
+                        ]
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error?.message || 'API Request Failed');
+                }
+
+                const data = await response.json();
+                const aiPrompt = data.choices[0]?.message?.content || "No generated text found.";
+
+                outputArea.textContent = aiPrompt;
+
+            } catch (error) {
+                console.error(error);
+                outputArea.textContent = `Error: ${error.message}`;
+                alert('Failed to generate prompt. See result area for details.');
+            } finally {
+                setLoading(false);
+            }
+        });
+
+        // Copy Helper
+        function copyTextToClipboard(btnElement) {
+            const text = outputPrompt.textContent;
+            if (!text) return;
+
+            navigator.clipboard.writeText(text).then(() => {
+                const originalText = btnElement.innerText;
+                btnElement.innerText = 'Copied!';
+                setTimeout(() => {
+                    btnElement.innerText = originalText;
+                }, 2000);
+            });
+        }
+
+        // Copy Listeners
+        copyBtn.addEventListener('click', () => copyTextToClipboard(copyBtn));
+        copyBtn2.addEventListener('click', () => copyTextToClipboard(copyBtn2));
+
+        // Init
+        renderCharInputs();
+
+    </script>
+</body>
+
+</html>
