@@ -655,7 +655,7 @@
           const promptRows = rows.map(row => [row[idIndex], row[promptIndex]]);
           // Rename ID header to NAME for the prompts CSV
           if (promptRows.length > 0) {
-            promptRows[0][0] = 'NAME';
+            promptRows[0][0] = 'name';
           }
           const promptsCSV = arrayToCSV(promptRows);
           // Small delay to ensure browser handles second download
