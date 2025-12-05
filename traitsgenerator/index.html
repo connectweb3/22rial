@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>22 Bulk NFT Traits CSV Generator</title>
+  <link rel="stylesheet" href="../home.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+</head>
+
+<body>
+  <div class="page">
+    <header>
+      <div class="pill">CSV ready</div>
+      <h1>Bulk NFT Traits + Prompt Generator</h1>
+      <p class="lede">Select which traits stay active, type options per trait, and generate a CSV with IDs,
+        compatibility-aware face items, and a prompt column for image generation.</p>
+      <div class="tips">
+        <span class="pill" style="background: rgba(49,196,141,0.12); border-color: rgba(49,196,141,0.3);">Eyes & Eyewear
+          share one column</span>
+        <span class="pill" style="background: rgba(49,196,141,0.12); border-color: rgba(49,196,141,0.3);">Mouth & Half
+          Mask share one column</span>
+        <span class="pill">Full Mask fills both</span>
+      </div>
+    </header>
+
+    <div class="panels">
+      <div class="panel">
+        <h2>Batch Settings</h2>
+        <label for="count">How many NFTs?</label>
+        <input id="count" type="number" min="1" max="10000" value="10" />
+        <p class="small">IDs start at 1 and are always the first column.</p>
+      </div>
+      <div class="panel">
+        <h2>Prompt</h2>
+        <label for="basePrompt">Base prompt for image generation</label>
+        <textarea id="basePrompt" placeholder="detailed portrait, ultra clean render, dynamic light, 4k"></textarea>
+        <label class="checkbox">
+          <input type="checkbox" id="appendSummary" checked>
+          Append generated trait summary to the prompt column
+        </label>
+        <p class="small">Every CSV row will include a prompt: the base text plus (optionally) the picked traits for that
+          NFT.</p>
+      </div>
+      <div class="panel">
+        <h2>How to use</h2>
+        <p class="small">Use commas or new lines for options (e.g. <em>human, alien, robot</em>). Toggle a trait off to
+          drop it from the CSV. Compatibility rules are auto-applied for eyes/eyewear, mouth/half mask, and full masks.
+        </p>
+      </div>
+    </div>
+
+    <section class="panel">
+      <div class="flex" style="justify-content: space-between; align-items: flex-start;">
+        <div>
+          <h2 style="margin-bottom: 4px;">Trait options</h2>
+          <p class="small" style="margin: 0;">Defaults are included; edit as needed. Disabled traits will be skipped.
+          </p>
+          <div class="ai-count">
+            <label for="aiCount" style="margin:0;">AI options per trait</label>
+            <input id="aiCount" type="number" min="3" max="100" value="20" />
+          </div>
+        </div>
+        <div class="flex" style="gap:10px; align-items:center;">
+          <input id="themeInput" type="text" placeholder="Theme (e.g. Mafia, Medieval)" style="width: 200px;" />
+          <button class="mini-btn" id="generateAllBtn" type="button">Generate all traits (AI)</button>
+          <div class="pill" style="background: rgba(0,0,0,0.35); border-color: var(--border); color: var(--muted);">Full
+            Mask writes to Eyes + Mouth columns</div>
+        </div>
+      </div>
+      <div class="add-trait">
+        <div>
+          <label for="newTraitName">Add custom trait</label>
+          <input id="newTraitName" type="text" placeholder="e.g. Tattoo, Pet, Weapon" />
+        </div>
+        <div>
+          <label for="newTraitOptions">Options (comma or newline)</label>
+          <textarea id="newTraitOptions" placeholder="dragon tattoo, koi tattoo, lightning tattoo"></textarea>
+        </div>
+        <div class="actions">
+          <button id="genCustomBtn" type="button" class="mini-btn">Generate list (AI)</button>
+          <button id="addTraitBtn" type="button">Add trait</button>
+        </div>
+      </div>
+      <div id="traitsGrid" class="trait-grid"></div>
+    </section>
+
+    <div class="panel">
+      <button class="generate-btn" id="generateBtn">Generate & download Excel</button>
+      <div class="status" id="status"></div>
+      <div class="preview" id="preview"></div>
+    </div>
+  </div>
+
+  <script>
+    // WARNING: This key is visible in the client. For production, proxy this call server-side.
+    const OPENROUTER_API_KEY = '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';
+    const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
+    const OPENROUTER_MODEL = 'tngtech/deepseek-r1t2-chimera:free';
+
+    const traitDefinitions = [
+      { key: 'character', label: 'Character', defaults: ['human', 'alien', 'robot'] },
+      { key: 'bodyType', label: 'Body Type', defaults: ['slim', 'athletic', 'stocky'] },
+      { key: 'skinFurColor', label: 'Skin/fur Color', defaults: ['black skin', 'emerald fur', 'porcelain skin'] },
+      { key: 'headwear', label: 'Headwear', defaults: ['wearing cap', 'crown', 'beanie'] },
+      { key: 'hair', label: 'Hair', defaults: ['short fade', 'long curls', 'mohawk'] },
+      { key: 'eyes', label: 'Eyes', defaults: ['glowing eyes', 'sleepy eyes', 'cyber eyes'] },
+      { key: 'eyewear', label: 'Eyewear', defaults: ['aviators', 'neon visor', 'monocle'] },
+      { key: 'mouth', label: 'Mouth', defaults: ['smiling', 'grinning', 'neutral'] },
+      { key: 'halfMask', label: 'Half Mask', defaults: ['bandana mask', 'respirator mask'] },
+      { key: 'fullMask', label: 'Full Mask', defaults: ['full stealth mask', 'chrome helmet'] },
+      { key: 'bodyOutfit', label: 'Body/outfit', defaults: ['wearing white tshirt', 'street jacket', 'tactical suit'] },
+      { key: 'backAccesory', label: 'Back Accesory', defaults: ['jetpack', 'angel wings', 'katana sheath'] },
+      { key: 'accessories', label: 'Accessories', defaults: ['earring', 'chain', 'bracelet'] },
+      { key: 'backgroundColor', label: 'Background Color', defaults: ['gray', 'midnight blue', 'sunset gradient'] },
+      { key: 'characterPose', label: 'Character Pose', defaults: ['standing', 'waving', '3/4 turn'] },
+    ];
+
+    const traitState = new Map();
+
+    function createTraitCard(def) {
+      const card = document.createElement('div');
+      card.className = 'trait-card';
+      card.dataset.key = def.key;
+      card.dataset.active = 'true';
+
+      const head = document.createElement('div');
+      head.className = 'trait-head';
+
+      const label = document.createElement('div');
+      label.className = 'trait-label';
+      label.textContent = def.label;
+
+      const toggle = document.createElement('button');
+      toggle.className = 'toggle';
+      toggle.type = 'button';
+      toggle.textContent = 'Active';
+      toggle.addEventListener('click', () => {
+        const isActive = card.dataset.active === 'true';
+        card.dataset.active = String(!isActive);
+        card.classList.toggle('disabled', isActive);
+        toggle.classList.toggle('disabled', isActive);
+        toggle.textContent = isActive ? 'Disabled' : 'Active';
+      });
+
+      head.appendChild(label);
+      head.appendChild(toggle);
+
+      const actions = document.createElement('div');
+      actions.className = 'flex';
+      const genBtn = document.createElement('button');
+      genBtn.className = 'mini-btn';
+      genBtn.type = 'button';
+      genBtn.textContent = 'Generate list (AI)';
+      genBtn.addEventListener('click', () => generateTraitOptions(def.key));
+      actions.appendChild(genBtn);
+
+      const textarea = document.createElement('textarea');
+      textarea.value = def.defaults.join(', ');
+      textarea.placeholder = 'comma or newline separated';
+      textarea.addEventListener('input', () => autoResize(textarea));
+      setTimeout(() => autoResize(textarea), 0);
+
+      card.appendChild(head);
+      card.appendChild(actions);
+      card.appendChild(textarea);
+      card.appendChild(document.createElement('div')).className = 'small';
+      card.lastChild.textContent = 'Compatibility: Eyes/Eyewear share; Mouth/Half Mask share; Hair/Headwear share Head; Full Mask fills Eyes+Mouth.';
+
+      traitState.set(def.key, { def, card, textarea, genBtn });
+      return card;
+    }
+
+    function buildTraitGrid() {
+      const grid = document.getElementById('traitsGrid');
+      traitDefinitions.forEach(def => grid.appendChild(createTraitCard(def)));
+    }
+
+    function slugify(label) {
+      return label
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '')
+        || 'trait';
+    }
+
+    function addCustomTrait() {
+      const nameInput = document.getElementById('newTraitName');
+      const optionsInput = document.getElementById('newTraitOptions');
+      const label = (nameInput.value || '').trim();
+      const options = parseValues(optionsInput.value || '');
+
+      if (!label) {
+        setStatus('Enter a name for the custom trait.', true);
+        return;
+      }
+      if (!options.length) {
+        setStatus('Add at least one option for the custom trait.', true);
+        return;
+      }
+
+      const baseKey = slugify(label);
+      let key = baseKey;
+      let counter = 1;
+      while (traitState.has(key)) {
+        key = baseKey + '-' + counter;
+        counter++;
+      }
+
+      const def = { key, label, defaults: options };
+      traitDefinitions.push(def);
+      const grid = document.getElementById('traitsGrid');
+      grid.appendChild(createTraitCard(def));
+      nameInput.value = '';
+      optionsInput.value = '';
+      setStatus('Added trait: ' + label, false);
+    }
+
+    function autoResize(textarea) {
+      if (!textarea) return;
+      textarea.style.height = 'auto';
+      textarea.style.height = Math.min(500, textarea.scrollHeight + 4) + 'px';
+    }
+
+    function getAiCount() {
+      const input = document.getElementById('aiCount');
+      const val = parseInt(input.value, 10);
+      if (!Number.isFinite(val) || val < 3) throw new Error('AI count must be at least 3.');
+      if (val > 100) throw new Error('AI count max is 100.');
+      return val;
+    }
+
+    function buttonLoading(btn, loading) {
+      if (!btn) return;
+      if (!btn.dataset.label) btn.dataset.label = btn.textContent;
+      btn.disabled = loading;
+      btn.classList.toggle('loading', loading);
+      btn.textContent = loading ? 'Generating...' : btn.dataset.label;
+    }
+
+    async function callOpenRouter(prompt) {
+      const res = await fetch(OPENROUTER_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + OPENROUTER_API_KEY,
+        },
+        body: JSON.stringify({
+          model: OPENROUTER_MODEL,
+          messages: [
+            { role: 'system', content: 'You generate concise NFT trait option lists as comma-separated values without numbering.' },
+            { role: 'user', content: prompt },
+          ],
+          temperature: 0.85,
+          max_tokens: 800,
+        }),
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error('AI request failed: ' + res.status + ' ' + text);
+      }
+      const data = await res.json();
+      const message = data?.choices?.[0]?.message?.content;
+      if (!message) throw new Error('Empty AI response');
+      return message.trim();
+    }
+
+    function parseAiOptions(label, text) {
+      const raw = text
+        .replace(/\n+/g, ',')
+        .replace(/\s+/g, ' ');
+      const opts = parseValues(raw);
+      if (!opts.length) throw new Error('AI did not return options for ' + label);
+      return Array.from(new Set(opts)); // dedupe
+    }
+
+    async function generateTraitOptions(key, silent = false) {
+      const entry = traitState.get(key);
+      if (!entry) return;
+      const { def, genBtn, textarea } = entry;
+      try {
+        buttonLoading(genBtn, true);
+        const count = getAiCount();
+        const theme = document.getElementById('themeInput').value.trim();
+        if (!silent) setStatus('Generating options for ' + def.label + '...', false);
+
+        let prompt = `Give me ${count} creative, concise NFT trait options for the trait "${def.label}". Output only comma-separated values, no numbering, no quotes.`;
+        if (theme) {
+          prompt += ` The traits MUST fit the theme: "${theme}".`;
+        }
+        const aiText = await callOpenRouter(prompt);
+        const opts = parseAiOptions(def.label, aiText);
+        textarea.value = opts.join(',\n');
+        autoResize(textarea);
+        if (!silent) setStatus('Generated ' + opts.length + ' ' + def.label + ' options.', false);
+      } catch (err) {
+        console.error(err);
+        setStatus('AI generation failed for ' + def.label + ': ' + err.message, true);
+      } finally {
+        buttonLoading(genBtn, false);
+      }
+    }
+
+    async function generateAllTraits() {
+      const allBtn = document.getElementById('generateAllBtn');
+      buttonLoading(allBtn, true);
+      allBtn.textContent = 'Generating all...';
+      try {
+        const count = getAiCount(); // validate early
+        for (const def of traitDefinitions) {
+          await generateTraitOptions(def.key, true);
+        }
+        setStatus('Generated options for all traits.', false);
+      } catch (err) {
+        console.error(err);
+        setStatus('Generate all failed: ' + err.message, true);
+      } finally {
+        allBtn.textContent = 'Generate all traits (AI)';
+        buttonLoading(allBtn, false);
+      }
+    }
+
+    async function generateCustomTraitOptions() {
+      const nameInput = document.getElementById('newTraitName');
+      const optionsInput = document.getElementById('newTraitOptions');
+      const label = (nameInput.value || '').trim();
+      const btn = document.getElementById('genCustomBtn');
+      if (!label) {
+        setStatus('Enter a name before generating options for the custom trait.', true);
+        return;
+      }
+      try {
+        buttonLoading(btn, true);
+        const count = getAiCount();
+        const theme = document.getElementById('themeInput').value.trim();
+        setStatus('Generating options for ' + label + '...', false);
+
+        let prompt = `Give me ${count} creative, concise NFT trait options for the trait "${label}". Output only comma-separated values, no numbering, no quotes.`;
+        if (theme) {
+          prompt += ` The traits MUST fit the theme: "${theme}".`;
+        }
+        const aiText = await callOpenRouter(prompt);
+        const opts = parseAiOptions(label, aiText);
+        optionsInput.value = opts.join(',\n');
+        autoResize(optionsInput);
+        setStatus('Generated ' + opts.length + ' options for ' + label + '.', false);
+      } catch (err) {
+        console.error(err);
+        setStatus('AI generation failed: ' + err.message, true);
+      } finally {
+        buttonLoading(btn, false);
+      }
+    }
+
+    function parseValues(raw) {
+      // Split on commas or newlines (not the letter "n").
+      return raw
+        .split(/[,\n]+/)
+        .map(v => v.trim())
+        .filter(Boolean);
+    }
+
+    function pick(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function collectTraits() {
+      const result = {};
+      traitState.forEach(({ def, card, textarea }) => {
+        const active = card.dataset.active === 'true';
+        const values = parseValues(textarea.value);
+        result[def.key] = { active, values, label: def.label };
+      });
+      return result;
+    }
+
+    function ensureValid(traits) {
+      const missing = Object.values(traits)
+        .filter(t => t.active && t.values.length === 0)
+        .map(t => t.label);
+      if (missing.length) {
+        throw new Error('Add at least one value for: ' + missing.join(', '));
+      }
+    }
+
+    function shouldIncludeEyes(traits) {
+      return (traits.eyes?.active && traits.eyes.values.length) ||
+        (traits.eyewear?.active && traits.eyewear.values.length) ||
+        (traits.fullMask?.active && traits.fullMask.values.length);
+    }
+
+    function shouldIncludeMouth(traits) {
+      return (traits.mouth?.active && traits.mouth.values.length) ||
+        (traits.halfMask?.active && traits.halfMask.values.length) ||
+        (traits.fullMask?.active && traits.fullMask.values.length);
+    }
+
+    function shouldIncludeHead(traits) {
+      return (traits.hair?.active && traits.hair.values.length) ||
+        (traits.headwear?.active && traits.headwear.values.length);
+    }
+
+    function pickHead(rowIndex, traits) {
+      const sources = [];
+      if (traits.headwear.active && traits.headwear.values.length) sources.push('headwear');
+      if (traits.hair.active && traits.hair.values.length) sources.push('hair');
+      if (!sources.length) return { head: '', source: null };
+      const choice = sources[rowIndex % sources.length];
+      return { head: pick(traits[choice].values), source: choice };
+    }
+
+    function pickFace(rowIndex, traits) {
+      const fullMaskActive = traits.fullMask.active && traits.fullMask.values.length;
+      const eyeSources = [];
+      const mouthSources = [];
+
+      if (fullMaskActive) {
+        eyeSources.push('fullMask');
+        mouthSources.push('fullMask');
+      }
+      if (traits.eyes.active && traits.eyes.values.length) eyeSources.push('eyes');
+      if (traits.eyewear.active && traits.eyewear.values.length) eyeSources.push('eyewear');
+      if (traits.mouth.active && traits.mouth.values.length) mouthSources.push('mouth');
+      if (traits.halfMask.active && traits.halfMask.values.length) mouthSources.push('halfMask');
+
+      const eyeChoice = eyeSources.length ? eyeSources[rowIndex % eyeSources.length] : null;
+      const mouthChoice = mouthSources.length ? mouthSources[rowIndex % mouthSources.length] : null;
+
+      if (eyeChoice === 'fullMask' || mouthChoice === 'fullMask') {
+        const val = pick(traits.fullMask.values);
+        return {
+          eye: val,
+          mouth: val,
+          eyeSource: 'fullMask',
+          mouthSource: 'fullMask',
+        };
+      }
+
+      const eyeValue = eyeChoice ? pick(traits[eyeChoice].values) : '';
+      const mouthValue = mouthChoice ? pick(traits[mouthChoice].values) : '';
+      return { eye: eyeValue, mouth: mouthValue, eyeSource: eyeChoice, mouthSource: mouthChoice };
+    }
+
+    function buildHeaders(traits, includeEyes, includeMouth, includeHead) {
+      const headers = ['ID'];
+      let eyesInserted = false;
+      let mouthInserted = false;
+      let headInserted = false;
+      traitDefinitions.forEach(def => {
+        if ((def.key === 'eyes' || def.key === 'eyewear') && includeEyes) {
+          if (!eyesInserted) headers.push('Eyes');
+          eyesInserted = true;
+          return;
+        }
+        if ((def.key === 'mouth' || def.key === 'halfMask') && includeMouth) {
+          if (!mouthInserted) headers.push('Mouth');
+          mouthInserted = true;
+          return;
+        }
+        if ((def.key === 'hair' || def.key === 'headwear') && includeHead) {
+          if (!headInserted) headers.push('Head');
+          headInserted = true;
+          return;
+        }
+        if (def.key === 'fullMask') return; // represented inside Eyes/Mouth
+        if (traits[def.key].active) headers.push(def.label);
+      });
+      headers.push('Prompt');
+      return headers;
+    }
+
+    function buildRows(count, basePrompt, appendSummary, traits) {
+      const includeEyes = shouldIncludeEyes(traits);
+      const includeMouth = shouldIncludeMouth(traits);
+      const includeHead = shouldIncludeHead(traits);
+      const headers = buildHeaders(traits, includeEyes, includeMouth, includeHead);
+      const rows = [headers];
+      const previewRows = [];
+      const seenCombos = new Set();
+      const duplicateIds = [];
+
+      for (let i = 0; i < count; i++) {
+        let attempt = 0;
+        let rowPack = null;
+        while (attempt < 200) {
+          rowPack = buildSingleRow(i, traits, includeEyes, includeMouth, includeHead, basePrompt, appendSummary);
+          if (!seenCombos.has(rowPack.key)) break;
+          attempt++;
+        }
+        const isDup = seenCombos.has(rowPack.key);
+        if (!isDup) seenCombos.add(rowPack.key);
+        else duplicateIds.push(i + 1);
+
+        rows.push(rowPack.row);
+        if (i < 6) previewRows.push({ row: rowPack.row, duplicate: isDup });
+      }
+
+      return { rows, previewRows, headers, duplicateIds };
+    }
+
+    function buildSingleRow(index, traits, includeEyes, includeMouth, includeHead, basePrompt, appendSummary) {
+      const row = [index + 1];
+      const selections = [];
+      const face = pickFace(index, traits);
+      const head = pickHead(index, traits);
+      let eyesPlaced = false;
+      let mouthPlaced = false;
+      let headPlaced = false;
+
+      traitDefinitions.forEach(def => {
+        if (def.key === 'fullMask') return;
+        if (def.key === 'eyes' || def.key === 'eyewear') {
+          if (!includeEyes || eyesPlaced) return;
+          row.push(face.eye || '');
+          selections.push({ key: 'eyes', label: 'Eyes', value: face.eye });
+          eyesPlaced = true;
+          return;
+        }
+        if (def.key === 'mouth' || def.key === 'halfMask') {
+          if (!includeMouth || mouthPlaced) return;
+          row.push(face.mouth || '');
+          selections.push({ key: 'mouth', label: 'Mouth', value: face.mouth });
+          mouthPlaced = true;
+          return;
+        }
+        if (def.key === 'hair' || def.key === 'headwear') {
+          if (!includeHead || headPlaced) return;
+          row.push(head.head || '');
+          selections.push({ key: 'head', label: 'Head', value: head.head });
+          headPlaced = true;
+          return;
+        }
+        if (!traits[def.key].active) return;
+        const val = traits[def.key].values.length ? pick(traits[def.key].values) : '';
+        row.push(val);
+        selections.push({ key: def.key, label: def.label, value: val });
+      });
+
+      const promptText = buildPrompt(basePrompt, appendSummary, selections);
+      row.push(promptText);
+      const comboKey = row.slice(1, row.length - 1).join('||'); // exclude ID and prompt
+      return { row, key: comboKey };
+    }
+
+    function buildPrompt(basePrompt, appendSummary, selections) {
+      const parts = [];
+      if (basePrompt.trim()) parts.push(basePrompt.trim());
+      if (appendSummary) {
+        const summary = selections
+          .filter(s => s.value)
+          .map(s => {
+            if (s.key === 'character') return s.value;
+            return s.label + ': ' + s.value;
+          })
+          .join('; ');
+        if (summary) parts.push(summary);
+      }
+      return parts.join('; ');
+    }
+
+    function downloadCSV(content, filename) {
+      const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement("a");
+      if (link.download !== undefined) {
+        const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        link.setAttribute("download", filename);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    }
+
+    function arrayToCSV(rows) {
+      return rows.map(row =>
+        row.map(cell => {
+          const str = String(cell);
+          // Always quote fields to prevent confusion with delimiters (commas, semicolons)
+          return `"${str.replace(/"/g, '""')}"`;
+        }).join(',')
+      ).join('\n');
+    }
+
+    function updatePreview(previewRows, headers) {
+      const preview = document.getElementById('preview');
+      if (!previewRows.length) {
+        preview.textContent = 'No preview yet. Generate to see a sample.';
+        return;
+      }
+
+      const table = document.createElement('table');
+      table.className = 'preview-table';
+      const thead = document.createElement('thead');
+      const headRow = document.createElement('tr');
+      headers.forEach(h => {
+        const th = document.createElement('th');
+        th.textContent = h;
+        headRow.appendChild(th);
+      });
+      thead.appendChild(headRow);
+      table.appendChild(thead);
+
+      const tbody = document.createElement('tbody');
+      previewRows.forEach(item => {
+        const tr = document.createElement('tr');
+        if (item.duplicate) tr.classList.add('duplicate');
+        item.row.forEach(cell => {
+          const td = document.createElement('td');
+          td.textContent = cell;
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+      });
+      table.appendChild(tbody);
+
+      preview.innerHTML = '';
+      preview.appendChild(table);
+    }
+
+    function setStatus(msg, isError = false) {
+      const status = document.getElementById('status');
+      status.style.color = isError ? '#fca5a5' : '#9fb3c8';
+      status.textContent = msg;
+    }
+
+    function handleGenerate() {
+      try {
+        const count = parseInt(document.getElementById('count').value, 10);
+        if (!Number.isFinite(count) || count < 1) {
+          setStatus('Enter how many NFTs to generate (minimum 1).', true);
+          return;
+        }
+
+        const basePrompt = document.getElementById('basePrompt').value || '';
+        const appendSummary = document.getElementById('appendSummary').checked;
+        const traits = collectTraits();
+        ensureValid(traits);
+
+        const { rows, previewRows, headers, duplicateIds } = buildRows(count, basePrompt, appendSummary, traits);
+
+        // Generate Traits CSV
+        const traitsCSV = arrayToCSV(rows);
+        downloadCSV(traitsCSV, 'nft-traits.csv');
+
+        // Generate Prompts CSV (ID + Prompt only)
+        const idIndex = rows[0].indexOf('ID');
+        const promptIndex = rows[0].indexOf('Prompt');
+
+        if (idIndex !== -1 && promptIndex !== -1) {
+          const promptRows = rows.map(row => [row[idIndex], row[promptIndex]]);
+          // Rename ID header to NAME for the prompts CSV
+          if (promptRows.length > 0) {
+            promptRows[0][0] = 'NAME';
+          }
+          const promptsCSV = arrayToCSV(promptRows);
+          // Small delay to ensure browser handles second download
+          setTimeout(() => downloadCSV(promptsCSV, 'nft-prompts.csv'), 500);
+        }
+
+        if (duplicateIds.length) {
+          setStatus('CSVs generated with duplicates flagged in preview rows: ' + duplicateIds.join(', '), true);
+        } else {
+          setStatus('CSVs generated with ' + count + ' unique rows. Prompt column included.', false);
+        }
+        updatePreview(previewRows, headers);
+      } catch (err) {
+        console.error(err);
+        setStatus(err.message || 'Something went wrong.', true);
+      }
+    }
+
+    document.getElementById('generateBtn').addEventListener('click', handleGenerate);
+    document.getElementById('generateAllBtn').addEventListener('click', generateAllTraits);
+    document.getElementById('addTraitBtn').addEventListener('click', addCustomTrait);
+    document.getElementById('genCustomBtn').addEventListener('click', generateCustomTraitOptions);
+    buildTraitGrid();
+    updatePreview([], []);
+  </script>
+</body>
+
+</html>

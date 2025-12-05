@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bulk NFT Metadata Maker</title>
+    <title>Bulk NFT Metadata Maker</title>
+    <link rel="stylesheet" href="../../home.css">
+    <div class="chain-selector">
+        <h3>Select Blockchain</h3>
+        <div class="chain-buttons">
+            <button class="chain-btn" data-chain="cardano">
+                <i class="fas fa-coins"></i> Cardano
+            </button>
+            <button class="chain-btn" data-chain="ethereum" disabled>
+                <i class="fab fa-ethereum"></i> Ethereum (Coming Soon)
+            </button>
+            <button class="chain-btn active" data-chain="solana">
+                <i class="fas fa-sun"></i> Solana
+            </button>
+            <button class="chain-btn" data-chain="polygon" disabled>
+                <i class="fas fa-layer-group"></i> Polygon (Coming Soon)
+            </button>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="input-section">
+            <div class="input-methods">
+                <button class="method-btn active" data-method="csv">
+                    <i class="fas fa-file-csv"></i> CSV Upload
+                </button>
+                <button class="method-btn" data-method="manual">
+                    <i class="fas fa-edit"></i> Manual Entry
+                </button>
+            </div>
+
+            <div class="input-content">
+                <!-- CSV Upload Section -->
+                <div id="csv-section" class="input-method active">
+                    <div class="upload-area" id="upload-area">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Drag & drop your CSV file here or click to browse</p>
+                        <input type="file" id="csv-file" accept=".csv" hidden>
+                        <button class="btn-secondary" onclick="document.getElementById('csv-file').click()">
+                            Choose File
+                        </button>
+                    </div>
+
+                    <div class="csv-preview" id="csv-preview" style="display: none;">
+                        <h4>CSV Preview</h4>
+                        <div class="table-container">
+                            <table id="csv-table"></table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Manual Entry Section -->
+                <div id="manual-section" class="input-method">
+                    <div class="manual-form">
+                        <h4>Add NFT Metadata</h4>
+                        <form id="manual-form">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="nft-id">ID/Name</label>
+                                    <input type="text" id="nft-id" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="nft-name">Display Name</label>
+                                    <input type="text" id="nft-name" required>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="nft-description">Description</label>
+                                <textarea id="nft-description" rows="3" required></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="nft-image">Image URL (IPFS)</label>
+                                <input type="url" id="nft-image" placeholder="ipfs://..." required>
+                            </div>
+
+                            <div class="traits-section">
+                                <h5>Traits</h5>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="trait-headwear">Headwear</label>
+                                        <input type="text" id="trait-headwear">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="trait-eyes">Eyes</label>
+                                        <input type="text" id="trait-eyes">
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="trait-mouth">Mouth</label>
+                                        <input type="text" id="trait-mouth">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="trait-outfit">Outfit</label>
+                                        <input type="text" id="trait-outfit">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="trait-body">Body</label>
+                                    <input type="text" id="trait-body">
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn-primary">
+                                <i class="fas fa-plus"></i> Add NFT
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="manual-list" id="manual-list" style="display: none;">
+                        <h4>Added NFTs</h4>
+                        <div class="nft-list" id="nft-list"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="output-section">
+            <div class="section-header">
+                <h3>Generated Metadata</h3>
+                <div class="output-controls">
+                    <button class="btn-secondary" id="preview-btn" disabled>
+                        <i class="fas fa-eye"></i> Preview
+                    </button>
+                    <button class="btn-primary" id="generate-btn" disabled>
+                        <i class="fas fa-cog"></i> Generate
+                    </button>
+                    <button class="btn-success" id="download-btn" disabled>
+                        <i class="fas fa-download"></i> Download ZIP
+                    </button>
+                </div>
+            </div>
+
+            <div class="metadata-preview" id="metadata-preview">
+                <div class="preview-placeholder">
+                    <i class="fas fa-file-code"></i>
+                    <p>Upload CSV or add NFTs manually to generate metadata</p>
+                </div>
+            </div>
+
+            <div class="download-options" id="download-options" style="display: none;">
+                <h4>Download Options</h4>
+                <div class="download-buttons">
+                    <button class="btn-outline" id="download-individual">
+                        <i class="fas fa-file"></i> Individual Files
+                    </button>
+                    <button class="btn-outline" id="download-zip">
+                        <i class="fas fa-file-archive"></i> ZIP Archive
+                    </button>
+                    <button class="btn-outline" id="download-json">
+                        <i class="fas fa-file-code"></i> Single JSON
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-section">
+        <div class="info-card">
+            <h4><i class="fas fa-info-circle"></i> CSV Format</h4>
+            <p>Your CSV must include: ID, name, description. Optional: symbol. Any additional columns will be
+                treated as traits automatically.</p>
+            <button class="btn-link" id="download-template">Download Template</button>
+        </div>
+
+        <div class="info-card">
+            <h4><i class="fas fa-sun"></i> Solana Format</h4>
+            <p>Generates Solana metadata with fields: name, symbol, description, and attributes[] per NFT</p>
+        </div>
+
+        <div class="info-card">
+            <h4><i class="fas fa-rocket"></i> Coming Soon</h4>
+            <p>Support for Ethereum, Solana, Polygon, and other major blockchain networks</p>
+        </div>
+    </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Bulk NFT Metadata Maker. Built for the NFT community.</p>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="script.js"></script>
+    </body>
+
+</html>

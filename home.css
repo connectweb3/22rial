@@ -1,0 +1,416 @@
+:root {
+    --bg-color: #0d0e15;
+    --text-color: #e0e0e0;
+    --accent-color: #00ff41;
+    /* Neon Green */
+    --secondary-accent: #ff00ff;
+    /* Cyberpunk Pink */
+    --card-bg: #1a1b26;
+    --border-color: #2e3440;
+    --input-bg: #0f141b;
+    --font-heading: 'Press Start 2P', cursive;
+    --font-body: 'VT323', monospace;
+
+    /* Additional vars for compatibility */
+    --panel: var(--card-bg);
+    --border: var(--border-color);
+    --muted: #9fb3c8;
+    --shadow: 8px 8px 0px #000;
+    --glow: 0 0 10px rgba(0, 255, 65, 0.2);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-body);
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    line-height: 1.6;
+    min-height: 100vh;
+    /* Subtle grid background */
+    background-image:
+        linear-gradient(rgba(0, 255, 65, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 255, 65, 0.03) 1px, transparent 1px);
+    background-size: 20px 20px;
+    font-size: 18px;
+    /* Slightly larger base size for VT323 */
+}
+
+/* CRT Scanline Effect */
+.scanlines {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom,
+            rgba(255, 255, 255, 0),
+            rgba(255, 255, 255, 0) 50%,
+            rgba(0, 0, 0, 0.1) 50%,
+            rgba(0, 0, 0, 0.1));
+    background-size: 100% 4px;
+    pointer-events: none;
+    z-index: 999;
+    animation: scanline 10s linear infinite;
+}
+
+@keyframes scanline {
+    0% {
+        background-position: 0 0;
+    }
+
+    100% {
+        background-position: 0 100%;
+    }
+}
+
+.container {
+    width: 100%;
+    max-width: 1400px;
+    padding: 2rem;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+}
+
+/* Typography */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: var(--font-heading);
+    color: var(--accent-color);
+    text-shadow: 4px 4px 0px #000;
+    line-height: 1.4;
+    margin-bottom: 1rem;
+}
+
+h1 {
+    font-size: 2.5rem;
+    text-align: center;
+    letter-spacing: -2px;
+}
+
+h2 {
+    font-size: 1.8rem;
+    color: var(--secondary-accent);
+}
+
+h3 {
+    font-size: 1.5rem;
+}
+
+h4 {
+    font-size: 1.2rem;
+}
+
+.subtitle,
+.lede {
+    text-align: center;
+    font-size: 1.5rem;
+    color: var(--secondary-accent);
+    margin-bottom: 3rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+p {
+    margin-bottom: 1rem;
+}
+
+.small {
+    font-size: 0.9rem;
+    color: var(--muted);
+}
+
+/* Links */
+a {
+    color: var(--accent-color);
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* Cards & Panels */
+.panel,
+.card,
+.tool-card,
+.info-card,
+.metadata-item,
+.trait-card,
+.tutorial-content {
+    background-color: var(--card-bg);
+    border: 4px solid var(--border-color);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow);
+    position: relative;
+}
+
+.tool-card {
+    display: block;
+    transition: all 0.2s ease;
+    text-align: center;
+}
+
+.tool-card:hover {
+    transform: translate(-4px, -4px);
+    box-shadow: 12px 12px 0px #000;
+    border-color: var(--accent-color);
+}
+
+.tool-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    filter: drop-shadow(4px 4px 0px rgba(0, 0, 0, 0.5));
+}
+
+.tools-grid,
+.panels,
+.chain-buttons,
+.input-methods,
+.info-section {
+    display: grid;
+    gap: 2rem;
+}
+
+.tools-grid {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+.panels {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+.chain-buttons {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.info-section {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+/* Forms & Inputs */
+label {
+    display: block;
+    font-family: var(--font-heading);
+    font-size: 0.8rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-color);
+}
+
+input[type="text"],
+input[type="number"],
+input[type="url"],
+textarea,
+select {
+    width: 100%;
+    padding: 12px;
+    background: var(--input-bg);
+    border: 2px solid var(--border-color);
+    color: var(--text-color);
+    font-family: var(--font-body);
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.5);
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 10px rgba(0, 255, 65, 0.2);
+}
+
+/* Buttons */
+button,
+.btn-primary,
+.btn-secondary,
+.btn-success,
+.btn-outline,
+.mini-btn,
+.generate-btn,
+.action-btn,
+.back-btn {
+    font-family: var(--font-heading);
+    font-size: 0.8rem;
+    padding: 12px 20px;
+    border: 4px solid var(--border-color);
+    background: var(--card-bg);
+    color: var(--text-color);
+    cursor: pointer;
+    text-transform: uppercase;
+    box-shadow: 4px 4px 0px #000;
+    transition: all 0.1s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    text-decoration: none;
+    line-height: 1;
+}
+
+button:hover:not(:disabled),
+.btn-primary:hover,
+.action-btn:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0px #000;
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+}
+
+button:active:not(:disabled) {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0px #000;
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    border-color: #444;
+    color: #666;
+}
+
+/* Specific Button Variants */
+.btn-primary,
+.generate-btn {
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+}
+
+.btn-secondary {
+    border-color: var(--secondary-accent);
+    color: var(--secondary-accent);
+}
+
+.chain-btn.active,
+.method-btn.active {
+    background: var(--accent-color);
+    color: #000;
+    border-color: var(--accent-color);
+    box-shadow: inset 4px 4px 0px rgba(0, 0, 0, 0.2);
+}
+
+/* Specific Components from Generators */
+.pill {
+    display: inline-block;
+    padding: 4px 8px;
+    background: rgba(0, 255, 65, 0.1);
+    border: 1px solid var(--accent-color);
+    color: var(--accent-color);
+    font-size: 0.8rem;
+    margin-right: 5px;
+    margin-bottom: 5px;
+}
+
+.upload-area {
+    border: 4px dashed var(--border-color);
+    padding: 40px;
+    text-align: center;
+    cursor: pointer;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.upload-area:hover {
+    border-color: var(--accent-color);
+    background: rgba(0, 255, 65, 0.05);
+}
+
+.preview-table,
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+}
+
+th,
+td {
+    border: 2px solid var(--border-color);
+    padding: 8px;
+    text-align: left;
+}
+
+th {
+    background: var(--border-color);
+    color: #fff;
+    font-family: var(--font-heading);
+    font-size: 0.7rem;
+}
+
+/* Trait Grid Specifics */
+.trait-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.trait-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.toggle {
+    padding: 5px 10px;
+    font-size: 0.7rem;
+}
+
+/* Tutorial Specifics */
+.tutorial-content code,
+.tutorial-content pre {
+    background: #000;
+    border: 1px solid var(--border-color);
+    padding: 1rem;
+    display: block;
+    overflow-x: auto;
+    font-family: 'VT323', monospace;
+    color: var(--accent-color);
+}
+
+/* Footer */
+footer {
+    margin-top: 4rem;
+    text-align: center;
+    font-size: 1rem;
+    color: #666;
+    border-top: 4px dashed var(--border-color);
+    padding-top: 2rem;
+}
+
+/* Utilities */
+.flex {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.hidden {
+    display: none;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .container {
+        padding: 1rem;
+    }
+
+    h1 {
+        font-size: 1.8rem;
+    }
+
+    .main-content {
+        grid-template-columns: 1fr;
+    }
+}

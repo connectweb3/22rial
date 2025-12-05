@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generate Image Tutorial - NFT Tools</title>
+    <link rel="stylesheet" href="home.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+    <style>
+        .tutorial-content {
+            background: var(--card-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 3rem;
+            backdrop-filter: blur(10px);
+            text-align: left;
+            max-width: 800px;
+            margin: 0 auto 2rem auto;
+            line-height: 1.6;
+        }
+
+        .tutorial-content h2 {
+            color: var(--accent-color);
+            margin-bottom: 1.5rem;
+        }
+
+        .tutorial-content h3 {
+            color: #fff;
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .tutorial-content p {
+            margin-bottom: 1rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .action-box {
+            margin: 1.5rem 0;
+        }
+
+        textarea {
+            width: 100%;
+            height: 300px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            color: var(--text-color);
+            padding: 1rem;
+            font-family: monospace;
+            resize: vertical;
+            margin-bottom: 0.5rem;
+        }
+
+        .action-btn {
+            display: inline-block;
+            padding: 0.8rem 1.5rem;
+            background: var(--accent-color);
+            color: #000;
+            font-weight: bold;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            margin-top: 0.5rem;
+        }
+
+        .action-btn:hover {
+            box-shadow: 0 0 15px rgba(0, 242, 234, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .action-btn.secondary {
+            background: var(--accent-secondary);
+            color: #fff;
+        }
+
+        .action-btn.secondary:hover {
+            box-shadow: 0 0 15px rgba(255, 0, 80, 0.4);
+        }
+
+        .copy-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--glass-border);
+            color: #fff;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .back-btn {
+            display: inline-block;
+            padding: 1rem 2rem;
+            background: linear-gradient(45deg, var(--accent-color), var(--accent-secondary));
+            color: #000;
+            font-weight: bold;
+            text-decoration: none;
+            border-radius: 50px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .back-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 242, 234, 0.3);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="scanlines"></div>
+    <div class="container">
+        <h1>Generate Image Tutorial</h1>
+        <p class="subtitle">Learn how to create stunning visuals for your NFT collection</p>
+
+        <div class="tutorial-content">
+            <h2>How to Generate Images</h2>
+
+            <div class="option-section">
+                <h3>Option 1: Automation</h3>
+                <p>Use this method to generate multiple images automatically.</p>
+
+                <div class="action-box">
+                    <p>1. Go to the automation app:</p>
+                    <a href="https://app.new/" target="_blank" class="action-btn">Open App.new</a>
+                </div>
+
+                <div class="action-box">
+                    <p>2. Copy and paste the following script into the app then click BUILD:</p>
+                    <textarea id="script-content" readonly spellcheck="false"># Bulk Image Edit Generation using Nano Banana and whisk
+
+This document explains how to use **Nano Banana and whisk** to generate multiple edited images automatically using a CSV file.
+
+---
+
+## How It Works
+
+Nano Banana and whisk can process many images at once by reading a **CSV file** where each row contains:
+
+- **name** — the final filename you want for the generated image  
+- **prompt** — the instruction used to generate or edit that image  
+
+After processing each row, the app will:
+1. Use the prompt to generate the image.
+2. Automatically download the result.
+3. Save the file using the **name** you provided (e.g., `1.jpg`, `myimage01.jpg`).
+4. Always use .jpg file
+---
+
+## CSV Format
+
+Your CSV file must follow this structure:
+
+name,prompt
+1,"make a dragon using this image"
+
+---
+
+## Example Workflow
+
+### CSV Input
+name,prompt
+1,"Add traits on this image and make the image as base image"
+
+### App Behavior
+- Generates the image using the prompt: **"make a dragon using this image"**
+- Downloads the generated file
+- Automatically renames it to **1.jpg**
+
+---
+
+## Summary
+
+By preparing a simple CSV file, you can:
+- Generate large batches of images
+- Apply different prompts to each image
+- Automatically rename each generated result according to the CSV
+
+This makes bulk editing fast, organized, and efficient.</textarea>
+                    <button onclick="copyScript()" class="copy-btn">Copy to Clipboard</button>
+                </div>
+            </div>
+
+            <hr style="border-color: var(--glass-border); margin: 2rem 0;">
+
+            <div class="option-section">
+                <h3>Option 2: Direct Tool</h3>
+                <p>Use the Google Labs Whisk tool directly.</p>
+                <a href="https://labs.google/fx/tools/whisk" target="_blank" class="action-btn secondary">Open Whisk
+                    Tool</a>
+            </div>
+        </div>
+
+        <a href="index.html" class="back-btn">Back to Home</a>
+
+        <footer>
+            &copy; 2025 NFT Tools Suite. All rights reserved.
+        </footer>
+    </div>
+
+    <script>
+        function copyScript() {
+            const copyText = document.getElementById("script-content");
+            copyText.select();
+            copyText.setSelectionRange(0, 99999); /* For mobile devices */
+            navigator.clipboard.writeText(copyText.value).then(() => {
+                const btn = document.querySelector('.copy-btn');
+                const originalText = btn.innerText;
+                btn.innerText = 'Copied!';
+                setTimeout(() => {
+                    btn.innerText = originalText;
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+
+</html>
