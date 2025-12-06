@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reference Prompt Generator - NFT Tools</title>
+    <link rel="stylesheet" href="../home.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+    <style>
+        /* Tool Specific Overrides */
+        .ratio-btn {
+            flex: 1;
+        }
+
+        .ratio-btn.active {
+            background-color: var(--accent-color);
+            color: #000;
+            border-color: var(--accent-color);
+            box-shadow: inset 4px 4px 0px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Spinner */
+        .loader {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ffffff;
+            border-bottom-color: transparent;
+            border-radius: 50%;
+            display: inline-block;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+        }
+
+        @keyframes rotation {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Secondary Slot Cards */
+        .secondary-card {
+            padding: 1rem !important;
+            margin-bottom: 1rem !important;
+            background: rgba(255, 255, 255, 0.02) !important;
+            border: 2px dashed var(--border-color) !important;
+        }
+
+        .drop-zone-content {
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="scanlines"></div>
+    <div class="container">
+        <header style="text-align: center; margin-bottom: 3rem;">
+            <h1>Reference Prompt Generator</h1>
+            <p class="subtitle">Ang Tool para makaisa ako</p>
+            <a href="../index.html" class="back-btn">&larr; Back to Tools</a>
+        </header>
+
+        <div class="tools-grid" style="grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));">
+            <!-- INPUT SECTION -->
+            <div class="card">
+                <h2>1. Reference Image</h2>
+                <div class="upload-area" id="dropZone"
+                    style="position: relative; min-height: 300px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                    <button class="btn-secondary mini-btn" onclick="clearImage()"
+                        style="position: absolute; top: 10px; right: 10px; z-index: 10;">Clear</button>
+
+                    <div class="drop-zone-content" id="dropContent">
+                        <div class="tool-icon" style="font-size: 4rem; margin-bottom: 0;">📸</div>
+                        <div style="font-family: var(--font-heading); margin-top: 1rem; color: var(--accent-color);">
+                            Drop Image Here</div>
+                        <div class="small">or click to browse</div>
+                    </div>
+                    <img id="imagePreview" alt="Preview"
+                        style="max-width: 100%; max-height: 280px; display: none; object-fit: contain;">
+                    <input type="file" id="fileInput" accept="image/*" style="display: none;">
+                </div>
+
+                <div style="margin-top: 1.5rem;">
+                    <label>Aspect Ratio</label>
+                    <div class="flex" style="gap: 1rem; margin-bottom: 1rem;">
+                        <button class="ratio-btn btn-secondary active" data-ratio="1:1">1:1</button>
+                        <button class="ratio-btn btn-secondary" data-ratio="9:16">9:16</button>
+                        <button class="ratio-btn btn-secondary" data-ratio="16:9">16:9</button>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div>
+                            <label>Style</label>
+                            <select id="styleSelect">
+                                <option value="">Auto / No Specific Style</option>
+                                <option value="Photoshoot">Photoshoot</option>
+                                <option value="Commercial">Commercial/Advertising</option>
+                                <option value="Cinematic">Cinematic</option>
+                                <option value="Cyberpunk">Cyberpunk</option>
+                                <option value="Anime">Anime/Manga</option>
+                                <option value="Digital Art">Digital Art</option>
+                                <option value="Oil Painting">Oil Painting</option>
+                                <option value="Minimalist">Minimalist</option>
+                                <option value="Fantasy">Fantasy</option>
+                                <option value="Macro Photography">Macro Photography</option>
+                                <option value="Street Photography">Street Photography</option>
+                                <option value="Editorial / Fashion">Editorial / Fashion</option>
+                                <option value="Film Noir">Film Noir</option>
+                                <option value="Double Exposure">Double Exposure</option>
+                                <option value="Underwater">Underwater</option>
+                                <option value="Aerial / Drone">Aerial / Drone</option>
+                                <option value="Infrared">Infrared</option>
+                                <option value="Bokeh">Bokeh / Depth of Field</option>
+                                <option value="HDR">HDR</option>
+                                <option value="Abstract">Abstract</option>
+                                <option value="Surrealism">Surrealism</option>
+                                <option value="Pop Art">Pop Art</option>
+                                <option value="3D Render">3D Render (UE5)</option>
+                                <option value="Claymation">Claymation</option>
+                                <option value="Pixel Art">Pixel Art</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label>Filter</label>
+                            <select id="filterSelect">
+                                <option value="">No Filter</option>
+                                <option value="Polaroid">Polaroid / Vintage</option>
+                                <option value="Kodak Portra 400">Kodak Portra 400</option>
+                                <option value="Fujifilm Superia">Fujifilm Superia</option>
+                                <option value="Ilford HP5 Plus">Ilford HP5 (B&W)</option>
+                                <option value="Cinestill 800T">Cinestill 800T</option>
+                                <option value="VSCO M5">VSCO M5 Aesthetic</option>
+                                <option value="Sepia">Sepia Tone</option>
+                                <option value="Vaporwave">Vaporwave / Glitch</option>
+                                <option value="Lomo">Lomo</option>
+                                <option value="Technicolor">Technicolor</option>
+                                <option value="Cross Process">Cross Process</option>
+                                <option value="Bleach Bypass">Bleach Bypass</option>
+                                <option value="Disposable Camera">Disposable Camera</option>
+                                <option value="Dreamy Soft Focus">Dreamy / Soft Focus</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 2rem;">
+                    <button id="generateBtn" class="btn-primary" disabled
+                        style="width: 100%; font-size: 1rem; padding: 1rem;">
+                        <span>Generate High-Quality Prompt</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- OUTPUT SECTION -->
+            <div class="card" style="display: flex; flex-direction: column;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h2>Generated Prompt</h2>
+                    <span id="statusTag" class="small" style="font-family: var(--font-body);">Ready</span>
+                </div>
+
+                <div id="outputArea"
+                    style="background: var(--input-bg); border: 2px solid var(--border-color); padding: 1.5rem; color: var(--text-color); font-family: 'VT323', monospace; min-height: 200px; white-space: pre-wrap; margin-bottom: 1rem; box-shadow: inset 4px 4px 10px rgba(0,0,0,0.5);">
+                    Select an image to start...</div>
+
+                <button id="copyBtn" class="btn-success" style="width: 100%;">
+                    Copy to Clipboard
+                </button>
+
+                <!-- Dynamic Slots -->
+                <div id="secondarySlotsArea" class="hidden"
+                    style="margin-top: 2rem; border-top: 2px dashed var(--border-color); padding-top: 1.5rem;">
+                    <h3 style="color: var(--secondary-accent); font-size: 1rem; text-transform: uppercase;">Detected
+                        References</h3>
+                    <div id="secondarySlotsContainer"
+                        style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 1rem;">
+                        <!-- Slots injected here -->
+                    </div>
+                    <button id="regenerateBtn" class="btn-primary hidden" style="width: 100%; margin-top: 1.5rem;"
+                        disabled>
+                        Regenerate with Specific Details
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            &copy; 2025 NFT Tools Suite. All rights reserved.
+        </footer>
+    </div>
+
+    <script>
+        const API_KEY = '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';
+        const MODEL = 'x-ai/grok-4.1-fast';
+
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const imagePreview = document.getElementById('imagePreview');
+        const dropContent = document.getElementById('dropContent');
+        const generateBtn = document.getElementById('generateBtn');
+        const outputArea = document.getElementById('outputArea');
+        const copyBtn = document.getElementById('copyBtn');
+        const statusTag = document.getElementById('statusTag');
+        const ratioBtns = document.querySelectorAll('.ratio-btn');
+        const styleSelect = document.getElementById('styleSelect');
+        const filterSelect = document.getElementById('filterSelect');
+        const secondarySlotsContainer = document.getElementById('secondarySlotsContainer');
+        const secondarySlotsArea = document.getElementById('secondarySlotsArea');
+        const regenerateBtn = document.getElementById('regenerateBtn');
+
+        let currentImageBase64 = null;
+        let selectedRatio = '1:1';
+        let secondaryInputs = {};
+
+        // Ratio Selection
+        ratioBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                ratioBtns.forEach(b => {
+                    b.classList.remove('active');
+                    b.style.borderColor = 'var(--secondary-accent)';
+                    b.style.backgroundColor = 'transparent';
+                    b.style.color = 'var(--secondary-accent)';
+                });
+                btn.classList.add('active');
+                btn.style.borderColor = 'var(--accent-color)';
+                btn.style.backgroundColor = 'var(--accent-color)';
+                btn.style.color = '#000';
+                selectedRatio = btn.dataset.ratio;
+            });
+        });
+
+        // Initialize active ratio style (Fix logic to match CSS vars)
+        // ... handled by click listener logic mostly, but let's reset visual state to match first load
+        const activeRatioBtn = document.querySelector('.ratio-btn.active');
+        if (activeRatioBtn) {
+            // Styles already in CSS class .active, but JS was overriding in original script
+            // We will let CSS handle it mostly, but script listens for clicks
+        }
+
+        // Drag and Drop Handlers
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = 'var(--accent-color)';
+            dropZone.style.backgroundColor = 'rgba(0, 255, 65, 0.1)';
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.style.borderColor = 'var(--border-color)';
+            dropZone.style.backgroundColor = 'rgba(0, 0, 0, 0.2)';
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = 'var(--border-color)';
+            dropZone.style.backgroundColor = 'rgba(0, 0, 0, 0.2)';
+            const file = e.dataTransfer.files[0];
+            handleFile(file);
+        });
+
+        dropZone.addEventListener('click', (e) => {
+            if (e.target.tagName !== 'BUTTON') fileInput.click();
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            handleFile(file);
+        });
+
+        function handleFile(file) {
+            if (!file || !file.type.startsWith('image/')) {
+                alert('Please upload a valid image file.');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                currentImageBase64 = e.target.result;
+                imagePreview.src = currentImageBase64;
+                imagePreview.style.display = 'block';
+                dropContent.style.display = 'none'; // Hide content
+                generateBtn.disabled = false;
+                outputArea.innerText = 'Image loaded. Click Generate to get your prompt.';
+                statusTag.innerText = 'Image Ready';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function clearImage() {
+            currentImageBase64 = null;
+            imagePreview.style.display = 'none';
+            imagePreview.src = '';
+            dropContent.style.display = 'block'; // Show content
+            fileInput.value = '';
+            generateBtn.disabled = true;
+            outputArea.innerText = 'Select an image to start...';
+            statusTag.innerText = 'Ready';
+        }
+
+        // Generate Prompt (Initial)
+        generateBtn.addEventListener('click', async () => {
+            if (!currentImageBase64) return;
+
+            setLoading(true);
+            // Reset secondary area
+            if (secondarySlotsArea) secondarySlotsArea.classList.add('hidden');
+            if (secondarySlotsContainer) secondarySlotsContainer.innerHTML = '';
+            secondaryInputs = {};
+            if (regenerateBtn) regenerateBtn.classList.add('hidden');
+
+            const base64Data = currentImageBase64.split(',')[1];
+            const mimeType = currentImageBase64.split(';')[0].split(':')[1];
+            const selectedStyle = styleSelect.value;
+
+            let systemPrompt = "Analyze this image and provide a JSON response.\n";
+            systemPrompt += "Return a valid JSON object with two keys:\n";
+            systemPrompt += "1. 'prompt': A SUPER HIGHLY DETAILED JSON-style text description. This should be a JSON object (or stringified JSON) with specific keys breaking down the image perfectly to allow for an exact clone. Keys should include: 'Subject', 'Physical_Appearance' (Face, Hair, Body), 'Outfit_Details' (Materials, Colors, Fit), 'Pose_&_Action', 'Environment_&_Background', 'Lighting_&_Atmosphere', 'Camera_Settings_&_Angle', 'Art_Style_&_Aesthetic', 'Color_Palette'. Be extremely descriptive.\n";
+            systemPrompt += "2. 'detected_elements': An array of strings attempting to identify specific distinct subjects or key product details that could use specific reference images (e.g., 'Person on left', 'Person in middle', 'Main Product', 'Background Detail'). Limit this list to 1-5 most important distinct elements.\n\n";
+
+            systemPrompt += `REQUIRED ASPECT RATIO: ${selectedRatio} (--ar ${selectedRatio})\n`;
+            if (selectedStyle) {
+                systemPrompt += `REQUIRED STYLE: ${selectedStyle}\n`;
+            }
+            if (filterSelect.value) {
+                systemPrompt += `REQUIRED FILTER/AESTHETIC: ${filterSelect.value}\n`;
+            }
+
+            systemPrompt += "Ensure the 'prompt' is the structured JSON object/text described above.";
+
+            try {
+                const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${API_KEY}`,
+                        'Content-Type': 'application/json',
+                        'HTTP-Referer': window.location.href,
+                        'X-Title': 'Reference Prompt Generator'
+                    },
+                    body: JSON.stringify({
+                        model: MODEL,
+                        messages: [
+                            {
+                                role: "user",
+                                content: [
+                                    {
+                                        type: "text",
+                                        text: systemPrompt
+                                    },
+                                    {
+                                        type: "image_url",
+                                        image_url: {
+                                            url: `data:${mimeType};base64,${base64Data}`
+                                        }
+                                    }
+                                ]
+                            }
+                        ],
+                        response_format: { type: "json_object" }
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API Error: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                let contentStr = data.choices[0].message.content;
+                contentStr = contentStr.replace(/```json/g, '').replace(/```/g, '').trim();
+
+                let result;
+                try {
+                    result = JSON.parse(contentStr);
+                } catch (e) {
+                    // Fallback if not valid JSON
+                    result = { prompt: contentStr, detected_elements: [] };
+                }
+
+                // Handle JSON object prompt for display
+                if (typeof result.prompt === 'object') {
+                    outputArea.innerText = JSON.stringify(result.prompt, null, 2);
+                } else {
+                    outputArea.innerText = result.prompt;
+                }
+
+                statusTag.innerText = 'Completed';
+                statusTag.style.color = 'var(--accent-color)';
+
+                // Handle Dynamic Slots
+                if (result.detected_elements && result.detected_elements.length > 0) {
+                    createSecondarySlots(result.detected_elements);
+                } else {
+                    statusTag.innerText = 'Completed (No specific details detected)';
+                }
+
+            } catch (error) {
+                console.error(error);
+                outputArea.innerText = `Error generating prompt: ${error.message}`;
+                statusTag.innerText = 'Error';
+                statusTag.style.color = '#f87171';
+            } finally {
+                setLoading(false);
+            }
+        });
+
+        function createSecondarySlots(elements) {
+            if (!secondarySlotsContainer) return;
+
+            secondarySlotsContainer.innerHTML = '';
+            secondarySlotsArea.classList.remove('hidden');
+            regenerateBtn.classList.remove('hidden');
+            regenerateBtn.disabled = true;
+
+            elements.forEach((label, index) => {
+                const slotId = `slot-${index}`;
+                const card = document.createElement('div');
+                card.className = 'card secondary-card';
+                // Styles moved to CSS
+
+                card.innerHTML = `
+                    <div style="font-size: 0.7rem; color: var(--secondary-accent); text-transform: uppercase;">${label}</div>
+                    
+                    <div class="toggle-container" style="display: flex; gap: 0.5rem; margin: 0.5rem 0;">
+                        <button class="toggle-btn active" data-type="image" data-id="${slotId}" style="flex:1; padding: 2px; font-size: 0.7rem; border: 1px solid var(--accent-color); background: var(--accent-color); color: #000;">Img</button>
+                        <button class="toggle-btn" data-type="text" data-id="${slotId}" style="flex:1; padding: 2px; font-size: 0.7rem; border: 1px solid var(--border-color); background: transparent; color: var(--muted);">Txt</button>
+                    </div>
+
+                    <div id="content-image-${slotId}" class="drop-zone" style="height: 100px; border: 2px dashed var(--border-color); position: relative; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.3);">
+                        <input type="file" id="input-${slotId}" accept="image/*" style="display:none">
+                        <div class="drop-zone-content" style="text-align: center;">
+                            <div style="font-size: 1.5rem;">📸</div>
+                        </div>
+                        <img id="img-${slotId}" style="display:none; width:100%; height:100%; object-fit:cover; position:absolute; top:0; left:0;">
+                    </div>
+
+                    <div id="content-text-${slotId}" style="display: none; height: 100px;">
+                        <textarea id="text-${slotId}" placeholder="Describe..." style="width: 100%; height: 100%; resize: none; font-size: 0.8rem;"></textarea>
+                    </div>
+                `;
+
+                secondarySlotsContainer.appendChild(card);
+
+                // Elements
+                const imgToggle = card.querySelector(`.toggle-btn[data-type="image"]`);
+                const textToggle = card.querySelector(`.toggle-btn[data-type="text"]`);
+                const imgContent = card.querySelector(`#content-image-${slotId}`);
+                const textContent = card.querySelector(`#content-text-${slotId}`);
+
+                const dropEl = card.querySelector(`#content-image-${slotId}`);
+                const inputEl = card.querySelector(`#input-${slotId}`);
+                const imgEl = card.querySelector(`#img-${slotId}`);
+                const contentEl = card.querySelector('.drop-zone-content');
+                const textInput = card.querySelector(`#text-${slotId}`);
+
+                // Toggle Logic
+                const setMode = (mode) => {
+                    if (mode === 'image') {
+                        imgToggle.style.background = 'var(--accent-color)';
+                        imgToggle.style.borderColor = 'var(--accent-color)';
+                        imgToggle.style.color = '#000';
+
+                        textToggle.style.background = 'transparent';
+                        textToggle.style.borderColor = 'var(--border-color)';
+                        textToggle.style.color = 'var(--muted)';
+
+                        imgContent.style.display = 'flex';
+                        textContent.style.display = 'none';
+
+                        if (imgEl.src && imgEl.style.display === 'block') {
+                            secondaryInputs[label] = { type: 'image', data: imgEl.src };
+                        } else {
+                            delete secondaryInputs[label];
+                        }
+                    } else {
+                        textToggle.style.background = 'var(--accent-color)';
+                        textToggle.style.borderColor = 'var(--accent-color)';
+                        textToggle.style.color = '#000';
+
+                        imgToggle.style.background = 'transparent';
+                        imgToggle.style.borderColor = 'var(--border-color)';
+                        imgToggle.style.color = 'var(--muted)';
+
+                        imgContent.style.display = 'none';
+                        textContent.style.display = 'block';
+
+                        if (textInput.value.trim()) {
+                            secondaryInputs[label] = { type: 'text', data: textInput.value.trim() };
+                        } else {
+                            delete secondaryInputs[label];
+                        }
+                    }
+                    updateRegenerateBtn();
+                };
+
+                imgToggle.addEventListener('click', () => setMode('image'));
+                textToggle.addEventListener('click', () => setMode('text'));
+
+                // Image Handlers
+                dropEl.addEventListener('click', () => inputEl.click());
+
+                const handleSlotFile = (file) => {
+                    if (!file || !file.type.startsWith('image/')) return;
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        imgEl.src = e.target.result;
+                        imgEl.style.display = 'block';
+                        contentEl.style.display = 'none';
+                        secondaryInputs[label] = { type: 'image', data: e.target.result };
+                        updateRegenerateBtn();
+                    };
+                    reader.readAsDataURL(file);
+                };
+
+                inputEl.addEventListener('change', (e) => handleSlotFile(e.target.files[0]));
+                dropEl.addEventListener('dragover', (e) => { e.preventDefault(); dropEl.style.borderColor = 'var(--accent-color)'; });
+                dropEl.addEventListener('dragleave', () => dropEl.style.borderColor = 'var(--border-color)');
+                dropEl.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    dropEl.style.borderColor = 'var(--border-color)';
+                    handleSlotFile(e.dataTransfer.files[0]);
+                });
+
+                // Text Handlers
+                textInput.addEventListener('input', (e) => {
+                    const val = e.target.value.trim();
+                    if (val) {
+                        secondaryInputs[label] = { type: 'text', data: val };
+                    } else {
+                        delete secondaryInputs[label];
+                    }
+                    updateRegenerateBtn();
+                });
+            });
+        }
+
+        function updateRegenerateBtn() {
+            if (Object.keys(secondaryInputs).length > 0) {
+                regenerateBtn.disabled = false;
+                regenerateBtn.innerText = 'Regenerate with Specific Details';
+            } else {
+                regenerateBtn.disabled = true;
+            }
+        }
+
+        // Regenerate Button Logic
+        if (regenerateBtn) {
+            regenerateBtn.addEventListener('click', async () => {
+                if (!currentImageBase64) return;
+
+                setLoading(true);
+                regenerateBtn.innerHTML = '<span class="loader"></span> Regenerating...';
+                regenerateBtn.disabled = true;
+
+                const base64Data = currentImageBase64.split(',')[1];
+                const mimeType = currentImageBase64.split(';')[0].split(':')[1];
+                const selectedStyle = styleSelect.value;
+
+                const contentArray = [
+                    {
+                        type: "text",
+                        text: `Analyze the main image again. This time, I have provided specific references (images or descriptions) for some of the detected elements. 
+                        
+                        TASK: Create a FINAL detailed JSON-style text prompt that combines the context of the main image with the specific details from the provided references.
+                        
+                        CRITICAL INSTRUCTION FOR REFERENCES:
+                        If a reference image is a PERSON, ONLY extract their PHYSICAL APPEARANCE (Face, Hair, Body Type, Age). DO NOT copy their outfit/clothing unless explicitly specified in the text description.
+                        
+                        The output should be a VALID JSON OBJECT (or stringified JSON) with keys: 'Subject', 'Physical_Appearance', 'Outfit_Details', 'Pose_&_Action', 'Environment_&_Background', 'Lighting_&_Atmosphere', 'Camera_Settings_&_Angle', 'Art_Style_&_Aesthetic', 'Color_Palette'.
+                        
+                        Aspect Ratio: ${selectedRatio}
+                        Style: ${selectedStyle}
+                        Filter/Aesthetic: ${filterSelect.value || 'None'}
+                        
+                        Return JUST the JSON structure.`
+                    },
+                    {
+                        type: "image_url",
+                        image_url: { url: `data:${mimeType};base64,${base64Data}` }
+                    }
+                ];
+
+                for (const [label, info] of Object.entries(secondaryInputs)) {
+                    contentArray.push({
+                        type: "text",
+                        text: `Reference for "${label}":`
+                    });
+
+                    if (info.type === 'image') {
+                        const secMime = info.data.split(';')[0].split(':')[1];
+                        const secData = info.data.split(',')[1];
+                        contentArray.push({
+                            type: "image_url",
+                            image_url: { url: `data:${secMime};base64,${secData}` }
+                        });
+                    } else {
+                        contentArray.push({
+                            type: "text",
+                            text: `Description: ${info.data}`
+                        });
+                    }
+                }
+
+                try {
+                    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${API_KEY}`,
+                            'Content-Type': 'application/json',
+                            'HTTP-Referer': window.location.href,
+                            'X-Title': 'Reference Prompt Generator'
+                        },
+                        body: JSON.stringify({
+                            model: MODEL,
+                            messages: [{ role: "user", content: contentArray }],
+                            response_format: { type: "json_object" }
+                        })
+                    });
+
+                    if (!response.ok) throw new Error(`API Error: ${response.statusText}`);
+
+                    const data = await response.json();
+                    let promptText = data.choices[0].message.content;
+
+                    // Attempt to parse if it's a JSON string
+                    try {
+                        const j = JSON.parse(promptText);
+                        // If it's wrapped in a 'prompt' key (which it shouldn't be based on my prompt, but just in case)
+                        if (j.prompt && typeof j.prompt === 'string') {
+                            // It might be a nested string
+                            promptText = j.prompt;
+                        } else {
+                            // It's likely the full object we want
+                            promptText = JSON.stringify(j, null, 2);
+                        }
+                    } catch (e) {
+                        // Not valid JSON, just show text
+                    }
+
+                    outputArea.innerText = promptText;
+                    statusTag.innerText = 'Regenerated';
+                    statusTag.style.color = 'var(--accent-color)';
+
+                } catch (error) {
+                    console.error(error);
+                    outputArea.innerText = `Error regenerating: ${error.message}`;
+                } finally {
+                    setLoading(false);
+                    regenerateBtn.innerHTML = 'Regenerate with Specific Details';
+                    regenerateBtn.disabled = false;
+                }
+            });
+        }
+
+        function setLoading(isLoading) {
+            generateBtn.disabled = isLoading;
+            if (isLoading) {
+                generateBtn.innerHTML = '<span class="loader"></span> Generating...';
+                outputArea.style.opacity = '0.5';
+                statusTag.innerText = 'Generating...';
+                statusTag.style.color = 'var(--secondary-accent)';
+            } else {
+                generateBtn.innerHTML = '<span>Generate High-Quality Prompt</span>';
+                outputArea.style.opacity = '1';
+                statusTag.innerHTML = "Ready";
+            }
+        }
+
+        // Copy Function
+        copyBtn.addEventListener('click', () => {
+            const text = outputArea.innerText;
+            if (!text || text === 'Select an image to start...') return;
+
+            navigator.clipboard.writeText(text).then(() => {
+                const originalText = copyBtn.innerHTML;
+                copyBtn.innerHTML = `Copied!`;
+                setTimeout(() => {
+                    copyBtn.innerHTML = originalText;
+                }, 2000);
+            });
+        });
+    </script>
+</body>
+
+</html>
