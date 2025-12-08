@@ -132,42 +132,54 @@
                         <span>Keep Only Selected</span>
                     </label>
                 </div>
-            </div>
-
-            <!-- Row Input -->
-            <div class="input-group row-selector">
-                <label for="rowNumberInput">TARGET ROWS (e.g. 1, 3, 5-8)</label>
-                <input type="text" id="rowNumberInput" placeholder="Enter row numbers...">
-            </div>
-
-            <!-- Action Button -->
-            <div class="actions" style="text-align: center; margin-top: 2rem;">
-                <button id="deleteBtn" class="btn-primary" style="width: 100%; font-size: 1.2rem;">
-                    PROCESS CSV
-                </button>
-            </div>
-
-            <div id="errorMsg" class="error-message" style="display: none;"></div>
-        </div>
-
-        <!-- Preview Section -->
-        <div class="preview-section" id="previewSection" style="display: none; margin-top: 2rem;">
-            <div class="card">
-                <div class="preview-header"
-                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                    <h2>Preview Result</h2>
-                    <button id="downloadBtn" class="btn-success">Download CSV</button>
+                <!-- Options -->
+                <div class="input-group" style="text-align: center; margin-bottom: 2rem;">
+                    <label class="radio-label" style="justify-content: center; margin-bottom: 1rem;">
+                        <input type="checkbox" id="ignoreHeaderCheckbox">
+                        <span>Has Header (Ignore Row 1 & Shift Counts)</span>
+                    </label>
+                    <label class="radio-label" style="justify-content: center;">
+                        <input type="checkbox" id="fixPromptCheckbox">
+                        <span>Fix Prompt Column (Merge after 1st comma)</span>
+                    </label>
                 </div>
-                <textarea id="csvPreview" readonly></textarea>
+
+                <!-- Row Input -->
+
+                <!-- Row Input -->
+                <div class="input-group row-selector">
+                    <label for="rowNumberInput">TARGET ROWS (e.g. 1, 3, 5-8)</label>
+                    <input type="text" id="rowNumberInput" placeholder="Enter row numbers...">
+                </div>
+
+                <!-- Action Button -->
+                <div class="actions" style="text-align: center; margin-top: 2rem;">
+                    <button id="deleteBtn" class="btn-primary" style="width: 100%; font-size: 1.2rem;">
+                        PROCESS CSV
+                    </button>
+                </div>
+
+                <div id="errorMsg" class="error-message" style="display: none;"></div>
             </div>
+
+            <!-- Preview Section -->
+            <div class="preview-section" id="previewSection" style="display: none; margin-top: 2rem;">
+                <div class="card">
+                    <div class="preview-header"
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h2>Preview Result</h2>
+                        <button id="downloadBtn" class="btn-success">Download CSV</button>
+                    </div>
+                    <textarea id="csvPreview" readonly></textarea>
+                </div>
+            </div>
+
+            <footer>
+                &copy; 2025 NFT Tools Suite. All rights reserved.
+            </footer>
         </div>
 
-        <footer>
-            &copy; 2025 NFT Tools Suite. All rights reserved.
-        </footer>
-    </div>
-
-    <script src="script.js"></script>
+        <script src="script.js"></script>
 </body>
 
 </html>

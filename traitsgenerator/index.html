@@ -662,6 +662,112 @@
           setTimeout(() => downloadCSV(promptsCSV, 'nft-prompts.csv'), 500);
         }
 
+        // Generate SOLANA METADATA CSV
+        // Columns: ID, name(Character Traits), description(empty), symbol(empty), then other traits
+        // Note: We need to find columns for 'Character' (to map to name).
+        // If 'Character' trait is not active/present, we'll leave name empty or use ID? User said "name(Character Traits)"
+
+        // Let's build the mapping from the full `rows` data.
+        // `headers` contains the column names. `rows` contains the data.
+
+        // Find indices
+        const charIndex = headers.findIndex(h => h.toLowerCase() === 'character'); // trait label is 'Character'
+        // We filter out 'Prompt' from the traits for this file? User said "then next is all the traits". 
+        // Usually prompt is not a trait key. 'Prompt' is at the end.
+
+        // New Headers
+        // The user wants: ID, name, description, symbol, [Traits...]
+        // We should exclude 'Prompt' from [Traits...] to be clean, or include it? 
+        // Request says: "then next is all the traits that being generated". Prompt is technically not a trait.
+        // I will exclude 'Prompt' from the end if it exists.
+
+        const solanaHeaders = ['ID', 'name', 'description', 'symbol'];
+        const traitIndices = [];
+        headers.forEach((h, idx) => {
+          if (h !== 'ID' && h !== 'Prompt' && h !== 'name' && h !== 'description' && h !== 'symbol') {
+            solanaHeaders.push(h);
+            traitIndices.push(idx);
+          }
+        });
+
+        const solanaRows = [solanaHeaders];
+
+        // Skip header row of original data (i=1)
+        for (let i = 1; i < rows.length; i++) {
+          const originalRow = rows[i];
+          const newRow = [];
+
+          // ID
+          newRow.push(originalRow[idIndex]); // idIndex is usually 0
+
+          // name
+          // If we found a character column, use it. Else empty.
+          let charValue = '';
+          if (charIndex !== -1) {
+            charValue = originalRow[charIndex];
+          }
+          newRow.push(charValue);
+
+          // description (empty)
+          newRow.push('');
+
+          // symbol (empty)
+          newRow.push('');
+
+          // Traits
+          traitIndices.forEach(tIdx => {
+            newRow.push(originalRow[tIdx]);
+          });
+
+          solanaRows.push(newRow);
+        }
+
+        const solanaCSV = arrayToCSV(solanaRows);
+        setTimeout(() => downloadCSV(solanaCSV, 'SOLANA METADATA.csv'), 1000); // 1s delay
+
+        // Generate CARDANO METADATA CSV
+        // Columns: ID, name(Character Traits), description(empty), image(empty), then other traits
+        const cardanoHeaders = ['ID', 'name', 'description', 'image'];
+        // Re-use traitIndices from solana logic as it correctly captured non-special traits
+        traitIndices.forEach(tIdx => {
+          cardanoHeaders.push(headers[tIdx]);
+        });
+
+        const cardanoRows = [cardanoHeaders];
+
+        // Skip header row of original data (i=1)
+        for (let i = 1; i < rows.length; i++) {
+          const originalRow = rows[i];
+          const newRow = [];
+
+          // ID
+          newRow.push(originalRow[idIndex]);
+
+          // name (Character Traits)
+          let charValue = '';
+          if (charIndex !== -1) {
+            charValue = originalRow[charIndex];
+          }
+          newRow.push(charValue);
+
+          // description (empty)
+          newRow.push('');
+
+          // image (empty)
+          newRow.push('');
+
+          // Traits
+          traitIndices.forEach(tIdx => {
+            newRow.push(originalRow[tIdx]);
+          });
+
+          cardanoRows.push(newRow);
+        }
+
+        const cardanoCSV = arrayToCSV(cardanoRows);
+        setTimeout(() => downloadCSV(cardanoCSV, 'Cardano Metadata.csv'), 1500); // 1.5s delay
+
+
         if (duplicateIds.length) {
           setStatus('CSVs generated with duplicates flagged in preview rows: ' + duplicateIds.join(', '), true);
         } else {

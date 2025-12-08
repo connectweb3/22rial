@@ -15,6 +15,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const modeRadios = document.querySelectorAll('input[name="deleteMode"]');
     const rowInputLabel = document.querySelector('.row-selector label');
 
+    const fixPromptCheckbox = document.getElementById('fixPromptCheckbox');
+    const ignoreHeaderCheckbox = document.getElementById('ignoreHeaderCheckbox');
+
     let currentFile = null;
     let updatedContent = '';
 
@@ -92,6 +95,14 @@ document.addEventListener('DOMContentLoaded', () => {
         // Parse rows
         const rowsToDelete = new Set();
         const parts = inputVal.split(',').map(s => s.trim());
+        const ignoreHeader = ignoreHeaderCheckbox.checked;
+
+        // Helper to adjust row index
+        // If ignoreHeader is true, User Input 1 maps to File Line 2 (Index 1 + 1 = 2)
+        // Wait, file lines are 1-indexed in our logic below (rowsToDelete.has(index + 1))
+        // So User Input X -> File Line X is default.
+        // If ignoreHeader, User Input X -> File Line X + 1.
+        const mapRow = (n) => ignoreHeader ? n + 1 : n;
 
         for (const part of parts) {
             if (part) {
@@ -109,7 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             showError(`Row number ${i} must be 1 or greater.`);
                             return;
                         }
-                        rowsToDelete.add(i);
+                        rowsToDelete.add(mapRow(i));
                     }
                 } else {
                     // Single Number
@@ -122,7 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         showError(`Row number ${num} must be 1 or greater.`);
                         return;
                     }
-                    rowsToDelete.add(num);
+                    rowsToDelete.add(mapRow(num));
                 }
             }
         }
@@ -149,10 +160,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (mode === 'keep') {
                 // Keep Only: Filter IN the rows
-                newLines = lines.filter((_, index) => rowsToDelete.has(index + 1));
+                // If ignoreHeader is true, we MUST keep line 1 (index 0) regardless of selection
+                newLines = lines.filter((_, index) => {
+                    const currentLineNum = index + 1;
+                    if (ignoreHeader && currentLineNum === 1) return true;
+                    return rowsToDelete.has(currentLineNum);
+                });
             } else {
                 // Delete: Filter OUT the rows (default)
+                // If ignoreHeader is true, line 1 is never in rowsToDelete (since min mapped is 2), so it is kept.
                 newLines = lines.filter((_, index) => !rowsToDelete.has(index + 1));
+            }
+
+            // --- Fix Column Logic ---
+            if (fixPromptCheckbox.checked) {
+                newLines = newLines.map(line => {
+                    const firstCommaIndex = line.indexOf(',');
+                    if (firstCommaIndex === -1) return line; // No comma, return as is
+
+                    const firstPart = line.substring(0, firstCommaIndex);
+                    let secondPart = line.substring(firstCommaIndex + 1);
+
+                    // Escape existing quotes in the second part
+                    secondPart = secondPart.replace(/"/g, '""');
+
+                    // Wrap second part in quotes
+                    return `${firstPart},"${secondPart}"`;
+                });
             }
 
             // Rebuild content

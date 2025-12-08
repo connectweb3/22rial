@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nano Banana | NFT Prompt Generator</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../home.css">
+</head>
+
+<body>
+    <div class="scanlines"></div>
+
+    <main class="container">
+        <header style="text-align: center; margin-bottom: 2rem;">
+            <h1>Nano Banana</h1>
+            <p class="subtitle">Next-Gen NFT Character Prompt Generator</p>
+        </header>
+
+        <div class="card">
+            <div class="input-section">
+                <div class="form-group">
+                    <label for="character">Character Concept</label>
+                    <input type="text" id="character" placeholder="e.g. Robot Frog, Cyber Samurai, Ethereal Elf"
+                        autocomplete="off">
+                </div>
+
+                <div class="panels" style="grid-template-columns: 1fr 1fr; gap: 1rem; display: grid;">
+                    <div class="form-group">
+                        <label for="artStyle">Art Style</label>
+                        <select id="artStyle">
+                            <option value="none">None (Subject Based)</option>
+                            <option value="90s-anime">90s Anime Aesthetic</option>
+                            <option value="cyberpunk">Cyberpunk Realism</option>
+                            <option value="synthwave">Synthwave Retro</option>
+                            <option value="pixel-8bit">8-Bit Pixel Art</option>
+                            <option value="pixel-16bit">16-Bit Pixel Art</option>
+                            <option value="pixel-32bit">32-Bit Pixel Art</option>
+                            <option value="kids-drawing">Kids Drawing</option>
+                            <option value="3d-render">3D Clay Render</option>
+                            <option value="oil-painting">Classical Oil Painting</option>
+                            <option value="vaporwave">Vaporwave Glitch</option>
+                            <option value="graffiti">Graffiti / Street Art</option>
+                            <option value="watercolor">Watercolor</option>
+                            <option value="low-poly">Low Poly 3D</option>
+                            <option value="sticker">Sticker Art</option>
+                            <option value="flat-vector">Flat Vector Illustration</option>
+                            <option value="psychedelic">Psychedelic / Trippy</option>
+                            <option value="ukiyo-e">Ukiyo-e Woodblock</option>
+                            <option value="gothic">Gothic Dark Fantasy</option>
+                            <option value="pop-art">Pop Art</option>
+                            <option value="chibi">Chibi / Kawaii</option>
+                            <option value="sketch">Rough Pencil Sketch</option>
+                            <option value="noir">Film Noir</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="mood">Expression / Mood</label>
+                        <select id="mood">
+                            <option value="normal" selected>Normal</option>
+                            <option value="confident and badass">Confident & Badass</option>
+                            <option value="stoic and serious">Stoic & Serious</option>
+                            <option value="happy and energetic">Happy & Energetic</option>
+                            <option value="mysterious and shadowed">Mysterious & Shadowed</option>
+                            <option value="angry and fierce">Angry & Fierce</option>
+                            <option value="melancholic and sad">Melancholic</option>
+                            <option value="crazy and chaotic">Chaotic & Crazy</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="panels"
+                    style="grid-template-columns: 1fr 1fr 1fr; gap: 1rem; display: grid; margin-top: 1rem;">
+                    <div class="form-group">
+                        <label for="positioning">Positioning</label>
+                        <select id="positioning">
+                            <option value="portrait slightly tilt to the right">Portrait (Tilt Right)</option>
+                            <option value="portrait slightly tilt to the left">Portrait (Tilt Left)</option>
+                            <option value="straight front portrait">Straight Front</option>
+                            <option value="full body dynamic pose">Full Body Dynamic</option>
+                            <option value="close up face">Extreme Close-Up</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="artTheme">Art Theme (Optional)</label>
+                        <select id="artTheme">
+                            <option value="none">None</option>
+                            <option value="doodle">Doodle</option>
+                            <option value="zentangle">Zentangle</option>
+                            <option value="mandala">Mandala</option>
+                            <option value="scribble">Scribble Art</option>
+                            <option value="line-drawing">Line Drawing</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="aspectRatio">Aspect Ratio</label>
+                        <select id="aspectRatio">
+                            <option value="1:1">1:1 (Square)</option>
+                            <option value="2:3">2:3 (Portrait)</option>
+                            <option value="3:2">3:2 (Landscape)</option>
+                            <option value="16:9">16:9 (Wide)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button id="generateBtn" class="generate-btn" style="width: 100%; margin-top: 2rem; font-size: 1.2rem;">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> Generate Prompt
+                </button>
+            </div>
+
+            <div class="output-section"
+                style="margin-top: 2rem; border-top: 2px dashed var(--border-color); padding-top: 2rem;">
+                <div class="output-header" style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                    <label>Generated JSON</label>
+                    <button id="copyBtn" class="btn-secondary" aria-label="Copy to Clipboard">
+                        <i class="fa-regular fa-copy"></i> Copy
+                    </button>
+                </div>
+                <div class="code-block-wrapper"
+                    style="background: #000; border: 2px solid var(--border-color); padding: 1rem;">
+                    <pre><code id="jsonOutput" style="color: var(--accent-color); font-family: 'VT323', monospace;">// Your generated prompt will appear here...</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <a href="../index.html" class="back-btn">&larr; Back to Tools</a>
+        </footer>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
