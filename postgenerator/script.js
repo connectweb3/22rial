@@ -212,9 +212,9 @@ document.addEventListener('DOMContentLoaded', () => {
             // 1. Generate Text Post
             let textSystemPrompt = `Generate an ULTIMATE SHILLING and BAITING social media post for the crypto project "${project.name}" (${project.category}).
             Target Platforms: ${socials.join(', ')}.
-            Style: Casual, native crypto-twitter speaker, meme-centric. Use broken grammar or lowercase sometimes for authenticity. Avoid sounding like a corporate ad or a bot.
-            Tone: Hype but grounded in community slang. Use phrases like "bro literally", "ngmi", "imagine fading", "send it".
-            Constraints: Do NOT use "giveaway", "Alpha leak", "100x incoming" (too bot-like). Do NOT ask explicitly to "Retweet", "Like", "Follow". Do NOT start every post with "POV" or "Diamond hands". vary the sentence structure.
+            Style: Short, punchy, and funny. Use witty one-liners or quick meme reactions. Casual crypto-twitter vibes.
+            Tone: Hype but comedic. Focus on the humor of the situation.
+            Constraints: KEEP IT SHORT. Max 1-2 sentences. No long paragraphs. Do NOT use "giveaway", "Alpha leak". Do NOT ask to "Retweet/Like".
             Requirements: Use emojis sparsely but effectively (�, �, 🤡, �), keep it under 280 characters.
             Output ONLY the post text.`;
 
