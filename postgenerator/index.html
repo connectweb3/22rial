@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post Generator - NFT Tools</title>
+    <link rel="stylesheet" href="../home.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+    <style>
+        .result-area {
+            background-color: var(--input-bg);
+            border: 2px solid var(--accent-color);
+            color: var(--text-color);
+            font-family: inherit;
+            padding: 1rem;
+            min-height: 100px;
+            margin-top: 1rem;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .result-label {
+            font-size: 0.8rem;
+            color: var(--accent-color);
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .checkbox-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .checkbox-label:hover {
+            border-color: var(--accent-color);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .checkbox-label input[type="checkbox"] {
+            accent-color: var(--accent-color);
+            width: 1.2rem;
+            height: 1.2rem;
+        }
+
+        select {
+            width: 100%;
+            padding: 0.8rem;
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            margin-bottom: 1rem;
+            font-family: inherit;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        .d-none {
+            display: none !important;
+        }
+
+        /* Upload & Preview Styles from Reference */
+        .upload-area {
+            border: 2px dashed var(--border-color);
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-bottom: 1rem;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .upload-area:hover,
+        .upload-area.drag-over {
+            border-color: var(--accent-color);
+            background: rgba(0, 255, 65, 0.1);
+        }
+
+        .preview-container {
+            display: flex;
+            justify-content: center;
+        }
+
+        .preview-box {
+            position: relative;
+            max-width: 200px;
+            border: 1px solid var(--accent-color);
+        }
+
+        .preview-box img {
+            width: 100%;
+            display: block;
+        }
+
+        .remove-img-btn {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: #ff0055;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="scanlines"></div>
+    <div class="container">
+        <h1>Post Generator</h1>
+        <p class="subtitle">Generate Social Media Posts for your Projects</p>
+        <a href="../index.html" class="back-btn" style="margin-bottom: 2rem;">&larr; Back to Tools</a>
+
+        <div class="card">
+            <h2>1. Reference Image (Optional)</h2>
+            <div class="upload-area" id="image-drop-zone">
+                <p>Drag & Drop Image Here<br><span style="font-size: 0.8rem; color: #666;">(or click to upload)</span>
+                </p>
+                <input type="file" id="image-input" accept="image/*" class="d-none">
+            </div>
+            <div id="image-preview" class="preview-container"></div>
+        </div>
+
+        <div class="card">
+            <h2>2. Select Social Platforms</h2>
+            <div class="checkbox-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" name="social" value="Facebook"> Facebook
+                </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" name="social" value="X.com"> X.com
+                </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" name="social" value="TikTok"> TikTok
+                </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" name="social" value="Instagram"> Instagram
+                </label>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>3. Select Project</h2>
+            <label for="project-select">Choose a Project:</label>
+            <select id="project-select">
+                <option value="">-- Loading Projects... --</option>
+            </select>
+
+            <div id="project-info" class="d-none">
+                <p><strong>Category:</strong> <span id="project-category">-</span></p>
+            </div>
+
+            <div id="custom-project-container" class="d-none" style="margin-top: 1rem;">
+                <label for="custom-project-name">Date/Name of Custom Project:</label>
+                <input type="text" id="custom-project-name" placeholder="e.g. MyNewCoin"
+                    style="width: 100%; padding: 0.8rem; background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-color); font-family: inherit;">
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>4. Select Variant</h2>
+            <label for="variant-select">Choose Content Type:</label>
+            <select id="variant-select" disabled>
+                <option value="">-- Select Project First --</option>
+            </select>
+        </div>
+
+        <div class="center-actions" style="text-align: center; margin: 2rem 0;">
+            <button id="generate-btn" class="btn-primary" style="font-size: 1.2rem; padding: 1rem 2rem;">
+                Generate Posts
+            </button>
+        </div>
+
+        <div class="card" id="result-section">
+            <h2>Generated Content</h2>
+
+            <div style="margin-bottom: 2rem;">
+                <h3>Type 1: Pure Text Post</h3>
+                <span class="result-label">Trendy information, long context</span>
+                <div id="output-text" class="result-area"></div>
+                <button class="btn-success" onclick="copyToClipboard('output-text', this)"
+                    style="margin-top: 0.5rem;">Copy Text</button>
+            </div>
+
+            <div>
+                <h3>Type 2: Image Generation Prompt</h3>
+                <span class="result-label">Prompt for AI Image Generator</span>
+                <div id="output-image-prompt" class="result-area"></div>
+                <button class="btn-success" onclick="copyToClipboard('output-image-prompt', this)"
+                    style="margin-top: 0.5rem;">Copy Prompt</button>
+            </div>
+        </div>
+
+        <footer>
+            &copy; 2025 NFT Tools Suite. All rights reserved.
+        </footer>
+    </div>
+
+    <script src="projects_data.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>

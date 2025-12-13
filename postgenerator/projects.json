@@ -1,0 +1,69 @@
+[
+    {
+        "id": "bored-ape-yacht-club",
+        "name": "Bored Ape Yacht Club",
+        "category": "NFT",
+        "variants": [
+            "Utility",
+            "Funny"
+        ]
+    },
+    {
+        "id": "pepe",
+        "name": "Pepe",
+        "category": "Memecoin",
+        "variants": [
+            "Funny"
+        ]
+    },
+    {
+        "id": "crypto-punks",
+        "name": "CryptoPunks",
+        "category": "NFT",
+        "variants": [
+            "Utility"
+        ]
+    },
+    {
+        "id": "dogecoin",
+        "name": "Dogecoin",
+        "category": "Memecoin",
+        "variants": [
+            "Funny",
+            "Utility"
+        ]
+    },
+    {
+        "id": "cool-cats",
+        "name": "Cool Cats",
+        "category": "NFT",
+        "variants": [
+            "Funny"
+        ]
+    },
+    {
+        "id": "shiba-inu",
+        "name": "Shiba Inu",
+        "category": "Memecoin",
+        "variants": [
+            "Funny"
+        ]
+    },
+    {
+        "id": "azuki",
+        "name": "Azuki",
+        "category": "NFT",
+        "variants": [
+            "Utility"
+        ]
+    },
+    {
+        "id": "pudgy-penguins",
+        "name": "Pudgy Penguins",
+        "category": "NFT",
+        "variants": [
+            "Funny",
+            "Utility"
+        ]
+    }
+]
